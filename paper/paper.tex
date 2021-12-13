@@ -42,6 +42,7 @@
 \newcommand{\fslafni}{FSL-AFNI\xspace}
 \newcommand{\afnispm}{AFNI-SPM\xspace}
 \newcommand{\tristan}[1]{\color{orange}\textbf{From Tristan:} #1\color{black}\xspace}
+\newcommand{\camille}[1]{\color{blue}\textbf{From Camille:} #1\color{black}\xspace}
 \newcommand{\ali}[2]{\color{green}\textbf{Ali:} #1\color{black}\xspace}
 \newcommand{\discuss}[1]{\uwave{#1}}
 \newcommand{\gk}[1]{\color{purple}#1 \textbf{-GK}\color{black}\xspace}
@@ -72,7 +73,7 @@
   machine error appeared moderately correlated ($r > 0.5$) in all tested conditions.
   Finally, we found that numerical variability had effects of similar magnitude to between-tool
   variability when errors were introduced at the precision of 17 bits --- a
-  precision level found in commonly-used libraries \gk{What does this mean? They only have precision of 17, or they use data that is 17 bits?}. \yohan{agree with Greg, it is unclear and a strong assertion!} Our findings motivate the
+  precision level found in commonly-used libraries \gk{What does this mean? They only have precision of 17, or they use data that is 17 bits?}. \yohan{agree with Greg, it is unclear and a strong assertion!} \camille{It is not entirely clear to me how this relates to the previous conclusions that BT variability was consistently larger than machine error} Our findings motivate the
   continued investigation of numerical instability in neuroimaging, and position it
   as a possible proxy for studying arbitrary between-tool variations.
 \end{abstract}
@@ -83,7 +84,7 @@ Software variability has been highlighted as an important source of error
 in fMRI analysis, originating from mainly two factors: between-tool
 variability denotes differences in the outcomes of different
 software toolboxes --- such as FSL, AFNI and SPM --- when analyzing the same dataset
-using similar methods \gk{this sentence says "two factors" but then only mentioned between tool. Also, it is too long}. \yohan{What do you mean by methods? Numerical schemes? If so, are we sure that theses tools are using the same numerical schemes?} Numerical variability, in contrast, denotes
+using similar methods \gk{this sentence says "two factors" but then only mentioned between tool. Also, it is too long}. \yohan{What do you mean by methods? Numerical schemes? If so, are we sure that theses tools are using the same numerical schemes?} \camille{I also had highlighed the 2 here, I think we could use "multiple factors" --> in practice we could also add different types of within-software variability (in the form of changing algorithms and/or parameters for a given step)} Numerical variability, in contrast, denotes
 differences in outcomes of the same analytical toolbox
 executed in different environments – such as different operating systems or
 different hardware platforms \gk{you mention these two examples of numerical variability, but you use neither in this paper. Why not mention the one you use?}. This manuscript investigates the extent to
@@ -114,12 +115,12 @@ variations in the BOLD signal, which is not expected to be measurably
 impacted by computational artifacts \gk{Why wouldn't it be? Especially if you state that it isn't surprising for tools to lead to different results, how come you expect fMRI to not suffer from this?}. \yohan{+1} Therefore, the observation reported
 in~\cite{bowring2019exploring} that the three main fMRI analysis toolboxes
 may result in marked analytical differences (Dice coefficients ranging from
-0.000 to 0.684 for thresholded activation maps), has raised substantial
+0.000 to 0.684 \camille{Apologies I don't have the numbers on the top of my head but can I confirm taht those were taken from the erratum that was published after the paper?} for thresholded activation maps), has raised substantial
 concern. In a follow-up study~\cite{bowring2021isolating}, the same authors
 isolated the analytical components where the pipelines diverge,
 highlighting a major impact of the signal model and suggesting that the
 root-cause for between-tool variability depends on the analysis design and
-task paradigm \gk{If you state this finding, you need to unpack what it means a little bit. What part of analysis design? By task paradigm do you essentially mean the expected effect-size for the task that individuals are performing within the scanner?}. Further, the work in~\cite{Li2021.12.01.470790} found
+task paradigm \gk{If you state this finding, you need to unpack what it means a little bit. What part of analysis design? By task paradigm do you essentially mean the expected effect-size for the task that individuals are performing within the scanner?} \camille{would be worth adding here that the identified main sources of variations were different across the 3 studies}. Further, the work in~\cite{Li2021.12.01.470790} found
 moderate agreement between results produced by five independent fMRI
 analysis pipelines and analyzed in details the components that led to these
 variations \gk{This sentence feels inconsistent and counter to the previous, and also doesn't tell us their findings; what components led to variations?}. Between-tool variability is supposedly an important determinant
@@ -193,7 +194,7 @@ pipeline.
     {}                     & {Second-level Inference}           & \checkmark & \checkmark & \checkmark \\
     \hline
   \end{tabular}
-  \caption{Software processing steps (adapted from~\cite{bowring2019exploring}).}
+  \caption{Software processing steps (adapted from~\cite{bowring2019exploring}). \camille{I don't fully understand the "first-level" and "second-level" info in this table. Do to the "contrasts" the model has to be estimated so each time "Contrast" is ticked then "model estimation" should be ticked as well}}
   \label{table:pipeline-steps}
 \end{table}
 
@@ -294,7 +295,7 @@ set the virtual precision to $t=24$~bits for single-precision values.
 We evaluated WT and BT variability for thresholded as well as unthresholded
 group-level and subject-level t-statistics maps by computing the
 standard deviation of t-statistic maps across pipelines or Fuzzy Libmath samples, respectively. For BT, we computed the standard deviation
-across a given pair of tools.
+across a given pair of tools \camille{standard dev with 2 samples ? --> cf. discussion on mattermost).
 For WT, we computed the standard deviation across the three
 Fuzzy Libmath samples of a given tool. We computed WT variability for a pair of tools (A, B) as follows:
 \begin{equation}
@@ -341,7 +342,7 @@ and unthresholded maps (Wilcoxon signed-rank test and t-test p~\textless~$10^{-5
 % \gk{we don't have sufficient sample size to say that p is that small,
 % so we should probably say less than $10^{-5}$ or something else we could actually
 % arrive at with our number of repetitions, pipeline pairs, and samples.}
-% for all tests, t-test p=0 \gk{similar comment re p value} for all tests).
+% for all tests, t-test p=0 \gk{similar comment re p value} for all tests) \camille{p is smaller than a very small p but not zero?}.
 Figure~\ref{fig:unthresh-maps}-\textbf{A},\textbf{B},\textbf{C} shows that
 these global differences were confirmed regionally.
 In addition, BT and WT variability appeared moderately correlated across voxels (Pearson's R
@@ -411,7 +412,7 @@ variability appeared moderately correlated for all subjects (R in [0.442,
   %\caption{Standard deviation of thresholded t-statistics map on template surface}
   \caption{For subject with highest WT variability,
     unthresholded subject-level variability computed between tools (\textbf{A}), within tools at machine error (\textbf{B}),
-    and difference between them (\textbf{C}).}
+    and difference between them (\textbf{C}). \camille{If the changes are visible, I think that it would be useful to add the correspondant unthresholded maps for the reader to see where the differences are and what they "look like"}}
   \label{fig:unthresh-maps-sbj}
 \end{figure*}
 
@@ -581,7 +582,7 @@ Figure~\ref{fig:replication-diff} shows the difference in SPM and AFNI
 group analyses maps between the results in~\cite{bowring2019exploring} and
 our replication. Numerical perturbations of 1 ulp are likely to have been
 introduced by our replication due to the use of GNU/Octave vs MATLAB for SPM
-and multithreading for AFNI. However, the group maps remained very similar
+and multithreading for AFNI \camille{Would this be feasible to check?}. However, the group maps remained very similar
 overall, which led us to conclude that our results correctly reproduced
 the ones in~\cite{bowring2019exploring}.
 \begin{figure*}[ht]
@@ -589,7 +590,7 @@ the ones in~\cite{bowring2019exploring}.
   % \centering
   \includegraphics[width=\textwidth]{figures/replication-diffs.png}
   \caption{Differences between reproduced and original results obtained in~\cite{bowring2019exploring}
-    of unthresholded group-level t-statistics for SPM (left) and AFNI (right).}
+    of unthresholded group-level t-statistics for SPM (left) and AFNI (right). \camille{it looks like the highest areas of difference in AFNI are due to difference un masking maybe worth noting?}}
   \label{fig:replication-diff}
   % \end{minipage}}
 \end{figure*}
