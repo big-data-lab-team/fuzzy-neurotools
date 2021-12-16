@@ -14,6 +14,7 @@ from statistics import mean
 import scipy.stats as stat
 from scipy.signal import resample
 import os
+import pandas as pd
 
 
 ############# Global nearest precision
@@ -38,27 +39,24 @@ def global_nearest_precision():
     rmse_ = {}
     all_rmse = {}
     global_average_rmse = []
-
     for p in range(11, 54, 2):
         rmse_[p] = 0
         all_rmse[str(p)] = []
         for s in ['fsl-afni', 'fsl-spm', 'afni-spm']:
-            bt_ = nib.load('./data/std/{}-unthresh-std.nii.gz'.format(s))
+            bt_ = nib.load('./data/abs/{}-unthresh-abs.nii.gz'.format(s))
             # bt_ = bt_.get_fdata()
-            wt_fsl = nib.load('./data/std/FL-FSL/p{}_fsl_unthresh_std.nii.gz'.format(p))
+            wt_fsl = nib.load('./data/abs/FL-FSL/p{}_fsl_unthresh_abs.nii.gz'.format(p))
             # wt_fsl = wt_fsl.get_fdata()
             rmse_value = calculate_rmse(bt_, wt_fsl)
             all_rmse[str(p)].append(rmse_value)
             rmse_[p] += rmse_value
 
     all_rmse = np.transpose(np.array(list(all_rmse.values())))
-
     return min(rmse_, key=rmse_.get), all_rmse
 
 
 def plot_rmse_nearest(all_rmse):
     import matplotlib.cm as cm
-
     fig = plt.figure(figsize=(15,10))
     colors = ['red', 'green', 'blue']
     tool_pair = ['fsl-afni', 'fsl-spm', 'afni-spm']
@@ -66,30 +64,27 @@ def plot_rmse_nearest(all_rmse):
         #type_ = ""
         #if s+1 in i2T1w: type_ += "*"
         #if s+1 in i2T2w: type_ += "$\dag$"
-        plt.plot(range(11,54, 2), rmse_, marker='x', color=colors[s], alpha=0.8, label=tool_pair[s].upper())
+        plt.plot(range(11,54, 2), rmse_, marker='x', color=colors[s], alpha=0.8, label="({})".format(tool_pair[s].replace('-', ', ').upper()))
 
     average = np.mean(all_rmse, axis=0, dtype=np.float64)
     p1 = plt.plot(range(11,54, 2), average, marker='o', linewidth=2, color='black', label='Average') #, color='grey', alpha=0.5)
     plt.xticks(range(11,54, 2), fontsize=16)
     plt.yticks(fontsize=16)
     plt.xlabel('Virtual precision (bits)', fontsize=22)
-    plt.ylabel('RMSE (std)', fontsize=22)
-
+    plt.ylabel('RMSE', fontsize=22)
     plt.legend(fontsize=16)
     # handles, labels = plt.gca().get_legend_handles_labels()
     # order = color_sbj_order
     # legend2 = plt.legend([handles[idx] for idx in order],[labels[idx] for idx in order], fontsize=12, bbox_to_anchor=(1, .96), title="Subjects")
-
     # legend1 = plt.legend(p1, ["Average"], bbox_to_anchor=(1.105,1))# bbox_to_anchor=(1.105,0.25) #loc=1
     # plt.gca().add_artist(legend1)
     # plt.gca().add_artist(legend2)
+    plt.savefig('./paper/figures/rmse-precisions-abs.png', bbox_inches='tight', facecolor='w', transparent=False)
 
-    plt.savefig('./paper/figures/rmse-precisions.png', bbox_inches='tight', facecolor='w', transparent=False)
 
+############# COMPUTE ABS. DIFF.
 
-############# COMPUTE and PLOT STD. DEV.
-
-def compute_std_WT(path_):
+def compute_abs_WT(path_):
     for p in range (11, 54, 2):
         s1 = os.path.join(path_, 'p{}/FSL/run1/tstat1.nii.gz'.format(p))
         s2 = os.path.join(path_, 'p{}/FSL/run2/tstat1.nii.gz'.format(p))
@@ -100,85 +95,65 @@ def compute_std_WT(path_):
         f2_data = f2.get_fdata()
         f3 = nib.load(s3)
         f3_data = f3.get_fdata()
-        img_concat = nib.funcs.concat_images([f1, f2, f3], check_affines=True, axis=None)
-        img_std = np.std(img_concat.get_fdata(), axis=3)
-        # nan bg images
-        img_std = np.where((f1_data == 0) & (f2_data == 0) & (f3_data == 0), np.nan, img_std)
-        nft_img_std = nib.Nifti1Image(img_std, f1.affine, header=f1.header)
-        nib.save(nft_img_std, os.path.join('data/std/FL-FSL/', 'p{}_fsl_unthresh_std.nii.gz'.format(p)))
+        img_abs = (np.absolute(f1_data - f2_data) + np.absolute(f1_data - f3_data) + np.absolute(f2_data - f3_data))/3
+        img_abs = np.where((f1_data == 0) & (f2_data == 0) & (f3_data == 0), np.nan, img_abs)
+        nft_img_abs = nib.Nifti1Image(img_abs, f1.affine, header=f1.header)
+        nib.save(nft_img_abs, os.path.join('data/abs/FL-FSL/', 'p{}_fsl_unthresh_abs.nii.gz'.format(p)))
 
 
-def compute_var(f1, f2, file_name=None, f3=None):
-    # Compute std. in BT
+def compute_abs(f1, f2, file_name=None, f3=None):
+    # Compute absolute diff in BT
     f1 = nib.load(f1)
-    img_concat = nib.funcs.concat_images([f1, f2], check_affines=True, axis=None)
-    img_std = np.std(img_concat.get_fdata(), axis=3)
     f1_data = f1.get_fdata()
     if type(f2) == str : f2 = nib.load(f2)
     f2_data = f2.get_fdata()
-    # activated regions have nonzero values
-    img_std = np.where((f1_data == 0) & (f2_data == 0), np.nan, img_std)
-    nft_img = nib.Nifti1Image(img_std, f1.affine, header=f1.header)
-    nib.save(nft_img, os.path.join('data/std/', '{}-std.nii.gz'.format(file_name)))
+    if f3 is None:
+        img_abs = np.absolute(f1_data - f2_data)
+        # activated regions have nonzero values
+        img_abs = np.where((f1_data == 0) & (f2_data == 0), np.nan, img_abs)
+        nft_img = nib.Nifti1Image(img_abs, f1.affine, header=f1.header)
+        nib.save(nft_img, os.path.join('data/abs/', '{}-abs.nii.gz'.format(file_name)))
 
-    # Compute variance and std. in WT
-    if f3 is not None:
-        img_concat = nib.funcs.concat_images([f1, f2, f3], check_affines=True, axis=None)       
-        img_std = np.std(img_concat.get_fdata(), axis=3)
-
+    # Compute absolute diff in WT
+    else:
         if type(f3) == str : f3 = nib.load(f3)
         f3_data = f3.get_fdata()
-        img_std = np.where((f1_data == 0) & (f2_data == 0) & (f3_data == 0), np.nan, img_std)
-
-        nft_img_std = nib.Nifti1Image(img_std, f1.affine, header=f1.header)
-        nib.save(nft_img_std, os.path.join('data/std/', '{}-std.nii.gz'.format(file_name)))
-
-        img_var = np.var(img_concat.get_fdata(), axis=3)
-        img_var = np.where((f1_data == 0) & (f2_data == 0) & (f3_data == 0), np.nan, img_var)
-        nft_img = nib.Nifti1Image(img_var, f1.affine, header=f1.header)
-        return nft_img
+        img_abs = (np.absolute(f1_data - f2_data) + np.absolute(f1_data - f3_data) + np.absolute(f2_data - f3_data))/3
+        img_abs = np.where((f1_data == 0) & (f2_data == 0) & (f3_data == 0), np.nan, img_abs)
+        nft_img_abs = nib.Nifti1Image(img_abs, f1.affine, header=f1.header)
+        nib.save(nft_img_abs, os.path.join('data/abs/', '{}-abs.nii.gz'.format(file_name)))
+        return nft_img_abs
 
 
-def combine_var(f1, f2, meta_, file_name):
+def combine_abs(f1, f2, meta_, file_name):
     var_f2_res = resample_from_to(f2, f1, order=0)
     # to combine two image variances, we use: var(x+y) = var(x) + var(y) + 2*cov(x,y)
     # and since the correlation between two arrays are so weak, we droped `2*cov(x,y)` from the formula
     f1t = f1.get_fdata()
     f2t = var_f2_res.get_fdata()
-    combine_var = np.nan_to_num(f1.get_fdata()) + np.nan_to_num(var_f2_res.get_fdata())
-    std_ = np.sqrt(combine_var)
+    average_abs = (np.nan_to_num(f1.get_fdata()) + np.nan_to_num(var_f2_res.get_fdata()))/2
     # nan bg images
-    std_ = np.where((np.isnan(f1t)) & (np.isnan(f2t)), np.nan, std_)
-    nft_img = nib.Nifti1Image(std_, meta_.affine, header=meta_.header)
-    nib.save(nft_img, os.path.join('data/std/', '{}-std.nii.gz'.format(file_name)))
+    average_abs = np.where((np.isnan(f1t)) & (np.isnan(f2t)), np.nan, average_abs)
+    nft_img = nib.Nifti1Image(average_abs, meta_.affine, header=meta_.header)
+    nib.save(nft_img, os.path.join('data/abs/', '{}-abs.nii.gz'.format(file_name)))
 
 
 def var_between_tool(tool_results):
-    ## thresholded group-level
-    fsl_ = tool_results['fsl']['act_deact']
-    afni_ = tool_results['afni']['act_deact']
-    spm_ = tool_results['spm']['act_deact']
-    # resampling first image on second image
-    spm_res = resample_from_to(nib.load(spm_), nib.load(fsl_), order=0)
-    afni_res = resample_from_to(nib.load(afni_), nib.load(fsl_), order=0)
-    # compute variances
-    compute_var(fsl_, afni_res, 'fsl-afni-thresh', f3=None)
-    compute_var(fsl_, spm_res, 'fsl-spm-thresh', f3=None)
-    spm_res = resample_from_to(nib.load(spm_), nib.load(afni_), order=0)
-    compute_var(afni_, spm_res, 'afni-spm-thresh', f3=None)
+    for type_ in ['thresh', 'unthresh']:
+        f = 'stat_file'
+        if type_ == 'thresh': f = 'act_deact'
 
-    # unthresholded group-level
-    fsl_ = tool_results['fsl']['stat_file']
-    afni_ = tool_results['afni']['stat_file']
-    spm_ = tool_results['spm']['stat_file']
-    # resampling first image on second image
-    spm_res = resample_from_to(nib.load(spm_), nib.load(fsl_), order=0)
-    afni_res = resample_from_to(nib.load(afni_), nib.load(fsl_), order=0)
-    # compute variances
-    compute_var(fsl_, afni_res, 'fsl-afni-unthresh', f3=None)
-    compute_var(fsl_, spm_res, 'fsl-spm-unthresh', f3=None)
-    spm_res = resample_from_to(nib.load(spm_), nib.load(afni_), order=0)
-    compute_var(afni_, spm_res, 'afni-spm-unthresh', f3=None)
+        fsl_ = tool_results['fsl'][f]
+        afni_ = tool_results['afni'][f]
+        spm_ = tool_results['spm'][f]
+        # resampling first image on second image
+        spm_res = resample_from_to(nib.load(spm_), nib.load(fsl_), order=0)
+        afni_res = resample_from_to(nib.load(afni_), nib.load(fsl_), order=0)
+        # compute abs diff
+        compute_abs(fsl_, afni_res, 'fsl-afni-{}'.format(type_), f3=None)
+        compute_abs(fsl_, spm_res, 'fsl-spm-{}'.format(type_), f3=None)
+        spm_res = resample_from_to(nib.load(spm_), nib.load(afni_), order=0)
+        compute_abs(afni_, spm_res, 'afni-spm-{}'.format(type_), f3=None)
 
     ## unthresholded subject-level
     for i in range(1, 17):
@@ -188,51 +163,24 @@ def var_between_tool(tool_results):
         # resampling first image on second image
         spm_res = resample_from_to(nib.load(spm_), nib.load(fsl_), order=0)
         afni_res = resample_from_to(nib.load(afni_), nib.load(fsl_), order=0)
-        # compute variances
-        compute_var(fsl_, afni_res, 'sbj{}-fsl-afni-unthresh'.format('%.2d' % i), f3=None)
-        compute_var(fsl_, spm_res, 'sbj{}-fsl-spm-unthresh'.format('%.2d' % i), f3=None)
+        # compute abd diff
+        compute_abs(fsl_, afni_res, 'sbj{}-fsl-afni-unthresh'.format('%.2d' % i), f3=None)
+        compute_abs(fsl_, spm_res, 'sbj{}-fsl-spm-unthresh'.format('%.2d' % i), f3=None)
         spm_res = resample_from_to(nib.load(spm_), nib.load(afni_), order=0)
-        compute_var(afni_, spm_res, 'sbj{}-afni-spm-unthresh'.format('%.2d' % i), f3=None)
+        compute_abs(afni_, spm_res, 'sbj{}-afni-spm-unthresh'.format('%.2d' % i), f3=None)
 
 
 def var_between_fuzzy(mca_results):
-    ## thresholded
-    fsl_1 = mca_results['fsl'][1]['act_deact']
-    fsl_2 = mca_results['fsl'][2]['act_deact']
-    fsl_3 = mca_results['fsl'][3]['act_deact']
-    afni_1 = mca_results['afni'][1]['act_deact']
-    afni_2 = mca_results['afni'][2]['act_deact']
-    afni_3 = mca_results['afni'][3]['act_deact']
-    spm_1 = mca_results['spm'][1]['act_deact']
-    spm_2 = mca_results['spm'][2]['act_deact']
-    spm_3 = mca_results['spm'][3]['act_deact']
-    # compute variances
-    fsl_var = compute_var(fsl_1, fsl_2, 'fsl-thresh', f3=fsl_3)
-    afni_var = compute_var(afni_1, afni_2, 'afni-thresh', f3=afni_3)
-    spm_var = compute_var(spm_1, spm_2, 'spm-thresh', f3=spm_3)
-    # combine variances
-    combine_var(fsl_var, afni_var, nib.load(fsl_1), 'fuzzy-fsl-afni-thresh')
-    combine_var(fsl_var, spm_var, nib.load(fsl_1), 'fuzzy-fsl-spm-thresh')
-    combine_var(afni_var, spm_var, nib.load(afni_1), 'fuzzy-afni-spm-thresh')
-
-    # unthresholded group-level
-    fsl_1 = mca_results['fsl'][1]['stat_file']
-    fsl_2 = mca_results['fsl'][2]['stat_file']
-    fsl_3 = mca_results['fsl'][3]['stat_file']
-    afni_1 = mca_results['afni'][1]['stat_file']
-    afni_2 = mca_results['afni'][2]['stat_file']
-    afni_3 = mca_results['afni'][3]['stat_file']
-    spm_1 = mca_results['spm'][1]['stat_file']
-    spm_2 = mca_results['spm'][2]['stat_file']
-    spm_3 = mca_results['spm'][3]['stat_file']
-    # compute variances
-    fsl_var = compute_var(fsl_1, fsl_2, 'fsl-unthresh', f3=fsl_3)
-    afni_var = compute_var(afni_1, afni_2, 'afni-unthresh', f3=afni_3)
-    spm_var = compute_var(spm_1, spm_2, 'spm-unthresh', f3=spm_3)
-    # combine variances
-    combine_var(fsl_var, afni_var, nib.load(fsl_1), 'fuzzy-fsl-afni-unthresh')
-    combine_var(fsl_var, spm_var, nib.load(fsl_1), 'fuzzy-fsl-spm-unthresh')
-    combine_var(afni_var, spm_var, nib.load(afni_1), 'fuzzy-afni-spm-unthresh')
+    for type_ in ['thresh', 'unthresh']:
+        f = 'stat_file'
+        if type_ == 'thresh': f = 'act_deact'
+        # compute abs diff
+        fsl_abs = compute_abs(mca_results['fsl'][1][f], mca_results['fsl'][2][f], 'fuzzy-fsl-{}'.format(type_), f3=mca_results['fsl'][3][f])
+        afni_abs = compute_abs(mca_results['afni'][1][f], mca_results['afni'][2][f], 'fuzzy-afni-{}'.format(type_), f3=mca_results['afni'][3][f])
+        spm_abs = compute_abs(mca_results['spm'][1][f], mca_results['spm'][2][f], 'fuzzy-spm-{}'.format(type_), f3=mca_results['spm'][3][f])
+        combine_abs(fsl_abs, afni_abs, nib.load(mca_results['fsl'][1][f]), 'fuzzy-fsl-afni-{}'.format(type_))
+        combine_abs(fsl_abs, spm_abs, nib.load(mca_results['fsl'][1][f]), 'fuzzy-fsl-spm-{}'.format(type_))
+        combine_abs(afni_abs, spm_abs, nib.load(mca_results['afni'][1][f]), 'fuzzy-afni-spm-{}'.format(type_))
 
     # unthresholded subject-level
     for i in range(1, 17):
@@ -245,175 +193,238 @@ def var_between_fuzzy(mca_results):
         spm_1 = mca_results['spm'][1]['SBJ'].replace('NUM', '%.2d' % i )
         spm_2 = mca_results['spm'][2]['SBJ'].replace('NUM', '%.2d' % i )
         spm_3 = mca_results['spm'][3]['SBJ'].replace('NUM', '%.2d' % i )
-        # compute variances
-        fsl_var = compute_var(fsl_1, fsl_2, 'sbj{}-fsl-unthresh'.format('%.2d' % i), f3=fsl_3)
-        afni_var = compute_var(afni_1, afni_2, 'sbj{}-afni-unthresh'.format('%.2d' % i), f3=afni_3)
-        spm_var = compute_var(spm_1, spm_2, 'sbj{}-spm-unthresh'.format('%.2d' % i), f3=spm_3)
-        # combine variances
-        combine_var(fsl_var, afni_var, nib.load(fsl_1), 'sbj{}-fuzzy-fsl-afni-unthresh'.format('%.2d' % i))
-        combine_var(fsl_var, spm_var, nib.load(fsl_1), 'sbj{}-fuzzy-fsl-spm-unthresh'.format('%.2d' % i))
-        combine_var(afni_var, spm_var, nib.load(afni_1), 'sbj{}-fuzzy-afni-spm-unthresh'.format('%.2d' % i))
-
-
-def get_ratio(path_):
-    # Group-level
-    for type_ in ['thresh', 'unthresh']:
-        for pair_ in ['fsl-spm', 'fsl-afni', 'afni-spm']:
-            img1_ = nib.load('{}{}-{}-std.nii.gz'.format(path_, pair_, type_))
-            img2_ = nib.load('{}fuzzy-{}-{}-std.nii.gz'.format(path_, pair_, type_))
-            img1_data = np.nan_to_num(img1_.get_fdata())
-            img2_data = np.nan_to_num(img2_.get_fdata())
-            ratio_ = img1_data / img2_data
-            nft_img = nib.Nifti1Image(ratio_, img1_.affine, header=img1_.header)
-            nib.save(nft_img, os.path.join(path_, 'ratio-{}-{}.nii.gz'.format(pair_, type_)))
-    
-    # Subject-level
-    path_ = os.path.join(path_, 'subject_level')
-    for i in range(1, 17):
-        for type_ in ['unthresh']:
-            for pair_ in ['fsl-spm', 'fsl-afni', 'afni-spm']:
-                img1_ = nib.load('{}/sub-{}/sbj{}-{}-{}-std.nii.gz'.format(path_, '%.2d' % i, '%.2d' % i, pair_, type_))
-                img2_ = nib.load('{}/sub-{}/sbj{}-fuzzy-{}-{}-std.nii.gz'.format(path_, '%.2d' % i, '%.2d' % i, pair_, type_))
-                img1_data = np.nan_to_num(img1_.get_fdata())
-                img2_data = np.nan_to_num(img2_.get_fdata())
-                ratio_ = img1_data / img2_data
-                nft_img = nib.Nifti1Image(ratio_, img1_.affine, header=img1_.header)
-                nib.save(nft_img, os.path.join(path_, 'sbj{}-ratio-{}-{}.nii.gz'.format('%.2d' % i, pair_, type_)))
+        # compute abs diff
+        fsl_abs = compute_abs(fsl_1, fsl_2, 'sbj{}-fuzzy-fsl-unthresh'.format('%.2d' % i), f3=fsl_3)
+        afni_abs = compute_abs(afni_1, afni_2, 'sbj{}-fuzzy-afni-unthresh'.format('%.2d' % i), f3=afni_3)
+        spm_abs = compute_abs(spm_1, spm_2, 'sbj{}-fuzzy-spm-unthresh'.format('%.2d' % i), f3=spm_3)
+        combine_abs(fsl_abs, afni_abs, nib.load(fsl_1), 'sbj{}-fuzzy-fsl-afni-unthresh'.format('%.2d' % i))
+        combine_abs(fsl_abs, spm_abs, nib.load(fsl_1), 'sbj{}-fuzzy-fsl-spm-unthresh'.format('%.2d' % i))
+        combine_abs(afni_abs, spm_abs, nib.load(afni_1), 'sbj{}-fuzzy-afni-spm-unthresh'.format('%.2d' % i))
 
 
 def get_diff(path_):
     # Group-level
     for type_ in ['thresh', 'unthresh']:
         for pair_ in ['fsl-spm', 'fsl-afni', 'afni-spm']:
-            img1_ = nib.load('{}{}-{}-std.nii.gz'.format(path_, pair_, type_))
-            img2_ = nib.load('{}fuzzy-{}-{}-std.nii.gz'.format(path_, pair_, type_))
+            img1_ = nib.load('{}{}-{}-abs.nii.gz'.format(path_, pair_, type_))
+            img2_ = nib.load('{}fuzzy-{}-{}-abs.nii.gz'.format(path_, pair_, type_))
             img1_data = np.nan_to_num(img1_.get_fdata())
             img2_data = np.nan_to_num(img2_.get_fdata())
             diff_ = img1_data - img2_data
             nft_img = nib.Nifti1Image(diff_, img1_.affine, header=img1_.header)
-            nib.save(nft_img, os.path.join(path_, 'btMwt-{}-{}.nii.gz'.format(pair_, type_)))
+            nib.save(nft_img, os.path.join(path_, 'diffs', 'btMwt-{}-{}.nii.gz'.format(pair_, type_)))
     
     # Subject-level
-    path_ = os.path.join(path_, 'subject_level')
     for i in range(1, 17):
         for type_ in ['unthresh']:
             for pair_ in ['fsl-spm', 'fsl-afni', 'afni-spm']:
-                img1_ = nib.load('{}/sub-{}/sbj{}-{}-{}-std.nii.gz'.format(path_, '%.2d' % i, '%.2d' % i, pair_, type_))
-                img2_ = nib.load('{}/sub-{}/sbj{}-fuzzy-{}-{}-std.nii.gz'.format(path_, '%.2d' % i, '%.2d' % i, pair_, type_))
+                img1_ = nib.load('{}/sbj{}-{}-{}-abs.nii.gz'.format(path_, '%.2d' % i, pair_, type_))
+                img2_ = nib.load('{}/sbj{}-fuzzy-{}-{}-abs.nii.gz'.format(path_, '%.2d' % i, pair_, type_))
                 img1_data = np.nan_to_num(img1_.get_fdata())
                 img2_data = np.nan_to_num(img2_.get_fdata())
                 diff_ = img1_data - img2_data
                 nft_img = nib.Nifti1Image(diff_, img1_.affine, header=img1_.header)
-                nib.save(nft_img, os.path.join(path_, 'sub-{}/sbj{}-btMwt-{}-{}.nii.gz'.format('%.2d' % i, '%.2d' % i, pair_, type_)))
+                nib.save(nft_img, os.path.join(path_, 'diffs', 'sbj{}-btMwt-{}-{}.nii.gz'.format('%.2d' % i, pair_, type_)))
 
 
-def cluster_std(bt_, wt_, img_f1, tool_, type_):
-    O = np.ones(bt_.shape)
-    bt_ = np.nan_to_num(bt_)
-    wt_ = np.nan_to_num(wt_)
+############# PLOT ABS. DIFF.
 
-    # Upper maps
-    bt_class1 = np.where((bt_<0.005), bt_, np.nan)# & (wt_>3))
-    bt_data1 = np.reshape(bt_class1, -1)
-    wt_class1 = np.where((bt_<0.005), wt_, np.nan)# & (wt_>3))
-    wt_data1 = np.reshape(wt_class1, -1)
-    upper_map = np.where((bt_<0.005), O, np.nan)# & (wt_>3))
-    img_d_img = nib.Nifti1Image(upper_map, img_f1.affine, header=img_f1.header)
-    nib.save(img_d_img, './data/std/clusters/upper-maps-{}-{}.nii.gz'.format(type_, tool_))
-
-    # Lower maps
-    bt_class2 = np.where((wt_<0.1), bt_, np.nan)#
-    bt_data2 = np.reshape(bt_class2, -1)
-    wt_class2 = np.where((wt_<0.1), wt_, np.nan)#
-    wt_data2 = np.reshape(wt_class2, -1)
-    lower_map = np.where((wt_<0.1), O, np.nan)#
-    img_d_img = nib.Nifti1Image(lower_map, img_f1.affine, header=img_f1.header)
-    nib.save(img_d_img, './data/std/clusters/lower-maps-{}-{}.nii.gz'.format(type_, tool_))
-
+def check_intensities(bt_, wt_, type_, ax, tool1):
     # Correlated maps
-    # (0.5<bt_/wt_) & (bt_/wt_< 2) & (wt_ > 0.1) & (bt_ > 0.1)
-    bt_class3 = np.where((0.5<bt_/wt_) & (bt_/wt_< 2) & (wt_ > 0.1) & (bt_ > 0.1), bt_, np.nan)#
-    bt_data3 = np.reshape(bt_class3, -1)
-    wt_class3 = np.where((0.5<bt_/wt_) & (bt_/wt_< 2) & (wt_ > 0.1) & (bt_ > 0.1), wt_, np.nan)#
-    wt_data3 = np.reshape(wt_class3, -1)
-    corr_map = np.where((0.5<bt_/wt_) & (bt_/wt_< 2) & (wt_ > 0.1) & (bt_ > 0.1), bt_/wt_, np.nan)#
-    img_d_img = nib.Nifti1Image(corr_map, img_f1.affine, header=img_f1.header)
-    nib.save(img_d_img, './data/std/clusters/correlated-maps-{}-{}.nii.gz'.format(type_, tool_))
+    if type(tool1) == str: img1 = nib.load(tool1)
+    else: img1 = tool1
+    img_data1 = img1.get_fdata()
+    corr_map = np.where((0.99<bt_/wt_) & (bt_/wt_< 1.01) , img_data1, np.nan)#
+    other_voxel = np.where((0.99<bt_/wt_) & (bt_/wt_< 1.01), np.nan, img_data1)#
+    # print(f"bt other: min: {np.nanmin(other_voxel)} max: {np.nanmax(other_voxel)} mean {np.nanmean(other_voxel)} ")
+    h_, bins = np.histogram(np.nan_to_num(other_voxel))
+    ax.hist(np.reshape(other_voxel, -1), bins, log=True, label="Others")
+    # print(f"bt corr: min: {np.nanmin(corr_map)} max: {np.nanmax(corr_map)} mean {np.nanmean(corr_map)} ")
+    # h_, bins = np.histogram(np.nan_to_num(corr_map))
+    ax.hist(np.reshape(corr_map, -1), bins, log=True, label="Correlated voxels")
+    ax.legend()
+    ax.set_title(type_)
+    #plt.show()
 
-    return bt_data1, wt_data1, bt_data2, wt_data2, bt_data3, wt_data3, corr_map, upper_map
 
-
-def plot_corr_variances():
+def plot_corr_variances_group(tool_results):
     ### Plot correlation of variances between BT and WT
     for ind1, type_ in enumerate(['unthresh']):
         fig, ax = plt.subplots(nrows=1,ncols=3,figsize=(24, 7))
+        fig2, ax2 = plt.subplots(nrows=1,ncols=3,figsize=(24, 7))
         #fig.suptitle("Correlation of variances between tool-variability vs. numerical-variability")
         for ind_, pair_ in enumerate(['fsl-spm', 'fsl-afni', 'afni-spm']):
-            bfuzzy = './data/std/fuzzy-{}-{}-std.nii.gz'.format(pair_, type_)
+            bfuzzy = './data/abs/fuzzy-{}-{}-abs.nii.gz'.format(pair_, type_)
             bfuzzy = nib.load(bfuzzy)
-            btool = './data/std/{}-{}-std.nii.gz'.format(pair_, type_)
+            btool = './data/abs/{}-{}-abs.nii.gz'.format(pair_, type_)
             btool = nib.load(btool)
             if btool.shape != bfuzzy.shape:
                 raise NameError('Images from BT and WT are from different dimensions!')
 
             wt_ = bfuzzy.get_fdata()
             bt_ = btool.get_fdata()
-            data1 = np.reshape(bt_, -1)
+
+            # check intensity of correlated area
+            t1, t2 = pair_.split('-')
+            check_intensities(bt_, wt_, f'Group-level {type_} {pair_}', ax2[ind_],
+                              tool_results[t1]['stat_file'])
+
+            data1 = np.reshape(wt_, -1)
             data1 = np.nan_to_num(data1)
-            data2 = np.reshape(wt_, -1)
+            data2 = np.reshape(bt_, -1)
             data2 = np.nan_to_num(data2)
 
-            slope, intercept, r, p, stderr = scipy.stats.linregress(data1, data2)
+            r, p = scipy.stats.pearsonr(data1, data2)
+            # print("P-value: {} and R: {}".format(p, r))
+            slope, intercept, r2, p2, stderr = scipy.stats.linregress(data1, data2)
             #line = f'Regression line: y={intercept:.2f}+{slope:.2f}x, r={r:.2f}'
+            line = 'Regression line'
             y = intercept + slope * data1
 
             t1, t2 = pair_.split('-')
-            label_ = "{} and {}".format(t1.upper(), t2.upper()) #'{}'.format(pair_.upper())
+            label_ = "({}, {}) \np={}, r={:.4f}".format(t1.upper(), t2.upper(), p, r) #'{}'.format(pair_.upper())
             # if single: label_ = '{}'.format(pair_.upper())
 
-            bt_data1, wt_data1, bt_data2, wt_data2, bt_data3, wt_data3, corr_map, upper_map = cluster_std(bt_, wt_, btool, pair_, type_)
             ax[ind_].plot(data1, data2, linewidth=0, marker='o', alpha=.5, label=label_)
-            #ax[ind_].plot(bt_data1, wt_data1, linewidth=0, marker='o', color='purple', alpha=.5, label='Upper cluster')
-            #ax[ind_].plot(bt_data2, wt_data2, linewidth=0, marker='o', color='yellow', alpha=.5, label='Lower cluster')
-            #ax[ind_].plot(bt_data3, wt_data3, linewidth=0, marker='o', color='green', alpha=.5, label='Identity line')
+            # ax[ind_].plot([0, 2.5], [0, 2.5], color='black', linestyle='dashed', label='Identity line')
 
-            max_bt = max(np.nan_to_num(bt_data3))
-            bt_max_ind = np.argmax(np.nan_to_num(bt_data3))
-            wt_lower = wt_data3[bt_max_ind]
-
-            ax[ind_].plot([0, 2.5], [0, 2.5], color='black', linestyle='dashed', label='Identity line')
-
-            # ax[ind_].plot([0., 3.7], [0., 1.85], color='black', linestyle='dashed', label='Identity line')
-            # ax[ind_].plot([0., 1.25], [0., 2.5], color='black', linestyle='dashed')
+            ax[ind_].plot(data1, y, color='darkred', label=line)
 
             # ci = 1.96 * np.std(y)/np.mean(y)
             # ax.fill_between(x, (y-ci), (y+ci), color='g', alpha=.9)
             ax[ind_].set_title('')
             ax[ind_].set_xlabel('')
-            if ind_ == 0: ax[ind_].set_ylabel('WT variability', fontsize=14)
-            # if ind_[0] == 0: ax[ind_[0]].set_title('Correlation of variances in {}olded maps'.format(type_))
-            ax[ind_].set_xlabel('BT variability', fontsize=14)
-            ax[ind_].set_xlim([-0.15, 5])
-            ax[ind_].set_ylim([-0.07, 2.6])
+            if ind_ == 0: ax[ind_].set_ylabel('BT variability', fontsize=14)
+            ax[ind_].set_xlabel('WT variability', fontsize=14)
+            ax[ind_].set_ylim([-0.15, 7.9])
+            ax[ind_].set_xlim([-0.07, 2.6])
             # ax[ind_].set_xticklabels(fontsize=14)
             # ax[ind_].set_yticklabels(fontsize=14)
             ax[ind_].legend(facecolor='white', loc='upper right', fontsize=12)
             ax[ind_].tick_params(axis='both', labelsize=12)
-
             #ax[ind_].set_xscale('log')
 
-            # print fraction of clusters
-            data2[(data2 == 0) & (data1 == 0)] = np.nan
-            all_corr_count = np.count_nonzero(~np.isnan(data2))
-            corr_map[np.isnan(bt_) & np.isnan(wt_)] = np.nan
-            corr_count = np.count_nonzero(~np.isnan(corr_map))
-            upper_map[np.isnan(bt_) & np.isnan(wt_)] = np.nan
-            upper_count = np.count_nonzero(~np.isnan(upper_map))
-            print('{}\nFraction of green: %{:.1f}\nFraction of purple: %{:.1f}'.format(pair_, (corr_count/all_corr_count)*100, (upper_count/all_corr_count)*100))
-            print('stop')
+            if ind_ == 0: ax2[ind_].set_ylabel('#voxels', fontsize=14)
+            ax2[ind_].set_xlabel('T-statistics', fontsize=14)
 
-        #plt.show()
-        plt.savefig('./paper/figures/std-corr-{}-plot.png'.format(type_), bbox_inches='tight')
+        fig.savefig('./paper/figures/abs/corr/abs-corr-{}-plot.png'.format(type_), bbox_inches='tight')
+        fig2.savefig('./paper/figures/abs/corr/hist/hist-corr-{}-plot.png'.format(type_), bbox_inches='tight')
+
+
+def plot_corr_variances_gvp(tool_results):
+    ### Plot correlation of variances between BT and WT at (global virtual precision)
+    for ind1, type_ in enumerate(['unthresh']):
+        fig, ax = plt.subplots(nrows=1,ncols=2,figsize=(24, 7))
+        fig2, ax2 = plt.subplots(nrows=1,ncols=2,figsize=(24, 7))
+        #fig.suptitle("Correlation of variances between tool-variability vs. numerical-variability")
+        for ind_, pair_ in enumerate(['fsl-spm', 'fsl-afni']):
+            bfuzzy = './data/abs/FL-FSL/p17_fsl_unthresh_abs.nii.gz'
+            bfuzzy = nib.load(bfuzzy)
+            btool = './data/abs/{}-{}-abs.nii.gz'.format(pair_, type_)
+            btool = nib.load(btool)
+            if btool.shape != bfuzzy.shape:
+                raise NameError('Images from BT and WT are from different dimensions!')
+
+            wt_ = bfuzzy.get_fdata()
+            bt_ = btool.get_fdata()
+
+            # check intensity of correlated area
+            t1, t2 = pair_.split('-')
+            check_intensities(bt_, wt_, f'Group level at global t: {type_} {pair_}', ax2[ind_],
+                              tool_results[t1]['stat_file'])
+
+            data1 = np.reshape(wt_, -1)
+            data1 = np.nan_to_num(data1)
+            data2 = np.reshape(bt_, -1)
+            data2 = np.nan_to_num(data2)
+
+            r, p = scipy.stats.pearsonr(data1, data2)
+            t1, t2 = pair_.split('-')
+            label_ = "({}, {}) \np={}, r={:.4f}".format(t1.upper(), t2.upper(), p, r) #'{}'.format(pair_.upper())
+            slope, intercept, r2, p2, stderr = scipy.stats.linregress(data1, data2)
+            line = 'Regression line'
+            y = intercept + slope * data1
+
+            ax[ind_].plot(data1, data2, linewidth=0, marker='o', alpha=.5, label=label_)
+            # ax[ind_].plot([0, 3.7], [0, 3.7], color='black', linestyle='dashed', label='Identity line')
+            ax[ind_].plot(data1, y, color='darkred', label=line)
+
+            ax[ind_].set_title('')
+            ax[ind_].set_xlabel('')
+            if ind_ == 0: ax[ind_].set_ylabel('BT variability', fontsize=20)
+            ax[ind_].set_xlabel('WT variability', fontsize=20)
+            ax[ind_].set_ylim([-0.15, 7.9])
+            ax[ind_].set_xlim([-0.07, 3.8])
+            ax[ind_].legend(facecolor='white', loc='upper right', fontsize=16)
+            ax[ind_].tick_params(axis='both', labelsize=16)
+
+            if ind_ == 0: ax2[ind_].set_ylabel('#voxels', fontsize=20)
+            ax2[ind_].set_xlabel('T-statistics', fontsize=20)
+
+        fig.savefig('./paper/figures/abs/corr/abs-corr-{}-vp17-plot.png'.format(type_), bbox_inches='tight')
+        fig2.savefig('./paper/figures/abs/corr/hist/hist-corr-{}-vp17-plot.png'.format(type_), bbox_inches='tight')
+
+
+def plot_corr_variances_sbj(tool_results):
+    ### Plot correlation of variances between BT and WT
+    for ind1, type_ in enumerate(['unthresh']):
+        fig, ax = plt.subplots(nrows=16,ncols=3,figsize=(28, 64))
+        fig2, ax2 = plt.subplots(nrows=16,ncols=3,figsize=(28, 64))
+        #fig.suptitle("Correlation of variances between tool-variability vs. numerical-variability")
+        for i in range (1, 17):
+            for ind_, pair_ in enumerate(['fsl-spm', 'fsl-afni', 'afni-spm']):
+                # bfuzzy = './data/std/fuzzy-{}-{}-std.nii.gz'.format(pair_, type_)
+                bfuzzy = './data/abs/sbj{}-fuzzy-{}-{}-abs.nii.gz'.format('%.2d' % i, pair_, type_)
+                bfuzzy = nib.load(bfuzzy)
+                # btool = './data/std/{}-{}-std.nii.gz'.format(pair_, type_)
+                btool = './data/abs/sbj{}-{}-{}-abs.nii.gz'.format('%.2d' % i, pair_, type_)
+                btool = nib.load(btool)
+                if btool.shape != bfuzzy.shape:
+                    raise NameError('Images from BT and WT are from different dimensions!')
+
+                wt_ = bfuzzy.get_fdata()
+                bt_ = btool.get_fdata()
+
+                # check intensity of correlated area
+                t1, t2 = pair_.split('-')
+                img_type = 'SBJ-FR' #'SBJ-AR', 'SBJ'
+                if img_type in tool_results[t1].keys():
+                    tool1 = tool_results[t1][img_type].replace('NUM', '%.2d' % i )
+                    tool1 = resample_from_to(nib.load(tool1), btool, order=0)
+                    check_intensities(bt_, wt_, f"subject{'%.2d' % i}: {type_} {pair_}", ax2[i-1][ind_], tool1)
+
+                data1 = np.reshape(wt_, -1)
+                data1 = np.nan_to_num(data1)
+                data2 = np.reshape(bt_, -1)
+                data2 = np.nan_to_num(data2)
+
+                r, p = scipy.stats.pearsonr(data1, data2)
+                print("P-value: {} and R: {}".format(p, r))
+                slope, intercept, r2, p2, stderr = scipy.stats.linregress(data1, data2)
+                line = 'Regression line'
+                y = intercept + slope * data1
+
+                t1, t2 = pair_.split('-')
+                label_ = "({}, {}) \np={}, r={:.4f}".format(t1.upper(), t2.upper(), p, r)
+
+                ax[i-1][ind_].plot(data1, data2, linewidth=0, marker='o', alpha=.5, label=label_)
+                # ax[i-1][ind_].plot([0, 2.5], [0, 2.5], color='black', linestyle='dashed', label='Identity line')
+                ax[i-1][ind_].plot(data1, y, color='darkred', label=line)
+
+                ax[i-1][ind_].set_title('')
+                ax[i-1][ind_].set_xlabel('')
+                if ind_ == 0: ax[i-1][ind_].set_ylabel('BT variability', fontsize=14)
+                if i == 16: ax[i-1][ind_].set_xlabel('WT variability', fontsize=14)
+                ax[i-1][ind_].set_ylim([-0.15, 7.9])
+                ax[i-1][ind_].set_xlim([-0.07, 2.6])
+                ax[i-1][ind_].legend(facecolor='white', loc='upper right', fontsize=12)
+                ax[i-1][ind_].tick_params(axis='both', labelsize=12)
+
+                if ind_ == 0: ax2[i-1][ind_].set_ylabel('#voxels', fontsize=14)
+                if i == 16: ax2[i-1][ind_].set_xlabel('Intensities (func on MNI)', fontsize=14)
+
+        fig.savefig('./paper/figures/abs/corr/sbj-abs-corr-{}-plot.png'.format(type_), bbox_inches='tight')
+        fig2.savefig('./paper/figures/abs/corr/hist/his-{}-corr-{}-plot.png'.format(img_type, type_), bbox_inches='tight')
 
 
 ############# COMPUTE and PLOT DICES
@@ -494,13 +505,21 @@ def keep_roi(stat_img, reg_, image_parc, filename=None):
     data_nan = data_orig.astype(float)
     data_nan[np.isnan(parc_data_res)] = np.nan
 
+    data_orig[np.isnan(parc_data_res)] = 0.0
+    if np.all(data_orig == 0.0):
+        print("There is not activation in R")
+        s = 0
+    else:
+        print("There is activated voxel in R")
+        s = 1
+
     # Save as image
     data_img_nan = nib.Nifti1Image(data_nan, data_img.get_affine())
     if filename is None:
         filename = stat_img.replace('.nii', '_nan.nii')
     nib.save(data_img_nan, filename)
 
-    return(filename)
+    return(filename, s)
 
 
 def get_dice_values(regions_txt, image_parc, tool_results, mca_results):
@@ -514,12 +533,37 @@ def get_dice_values(regions_txt, image_parc, tool_results, mca_results):
             (key, val) = line.split()
             regions[int(key)+180] = val
             regions[int(key)] = 'R_' +  '_'.join(val.split('_')[1:])
+            # if val in ["L_V1_ROI", "L_V2_ROI", "L_V3_ROI", "L_V4_ROI", "L_LO1_ROI", "L_LO2_ROI"]:
+            #            non_bg = np.where(parc_data != 0)
+            #            L_colls = np.where(parc_data == int(key))
+            #            R_colls = np.where(parc_data == int(key) + 180)
+            #            total = len(L_colls[0]) + len(R_colls[0])
+            #            perc_ = (total / non_bg[0].size  )*100
+            #            print(f"Region name: {'_'.join(val.split('_')[1:])} and percentage of voxels: {perc_}")
 
     dices_ = {}
+    file_cols = ["Region", "FSL IEEE", "SPM IEEE", "AFNI IEEE", "FSL MCA1", "FSL MCA2", "FSL MCA3",
+                 "SPM MCA1", "SPM MCA2", "SPM MCA3", "AFNI MCA1", "AFNI MCA2", "AFNI MCA3"]
+    dframe = pd.DataFrame(np.array([['R', 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]]),
+                          columns=file_cols)
     #for act_ in ['exc_set_file', 'exc_set_file_neg', 'act_deact', 'stat_file']:
     for act_ in ['act_deact']:
+        ### Print global Dice values 
+        bt1 = compute_dice(tool_results['fsl'][act_], tool_results['afni'][act_])[0]
+        bt2 = compute_dice(tool_results['fsl'][act_], tool_results['spm'][act_])[0]
+        bt3 = compute_dice(tool_results['afni'][act_], tool_results['spm'][act_])[0]
+        print("Global Dice in BT for FSL-AFNI {}, FSL-SPM {}, and AFNI-SPM {}".format(bt1, bt2, bt3))
+
+        for tool_ in ['fsl', 'spm', 'afni']:            
+            wt1 = compute_dice(mca_results[tool_][1][act_], mca_results[tool_][2][act_])[0]
+            wt2 = compute_dice(mca_results[tool_][1][act_], mca_results[tool_][3][act_])[0]
+            wt3 = compute_dice(mca_results[tool_][2][act_], mca_results[tool_][3][act_])[0]
+            print("Global Dice in WT for {} {}".format(tool_, (wt1+wt2+wt3)/3))
+
         masked_regions = {}
         for r in regions.keys():
+            act_bin = []
+            act_bin.append(regions[r])
             colls = np.where(parc_data == r)
             if regions[r] not in dices_.keys():
                 dices_[regions[r]] = {}
@@ -532,9 +576,12 @@ def get_dice_values(regions_txt, image_parc, tool_results, mca_results):
                 dices_[regions[r]][act_]['tool'] = {}
                 dices_[regions[r]][act_]['mca'] = {}
 
-            masked_regions['fsl'] = keep_roi(tool_results['fsl'][act_], r, image_parc)
-            masked_regions['afni'] = keep_roi(tool_results['afni'][act_], r, image_parc)
-            masked_regions['spm'] = keep_roi(tool_results['spm'][act_], r, image_parc)
+            masked_regions['fsl'], s = keep_roi(tool_results['fsl'][act_], r, image_parc)
+            act_bin.append(s)
+            masked_regions['spm'], s = keep_roi(tool_results['spm'][act_], r, image_parc)
+            act_bin.append(s)
+            masked_regions['afni'], s = keep_roi(tool_results['afni'][act_], r, image_parc)
+            act_bin.append(s)
 
             dices_[regions[r]][act_]['tool']['fsl-afni'] = compute_dice(masked_regions['fsl'], masked_regions['afni'])[0]
             dices_[regions[r]][act_]['tool']['fsl-spm'] = compute_dice(masked_regions['fsl'], masked_regions['spm'])[0]
@@ -542,14 +589,22 @@ def get_dice_values(regions_txt, image_parc, tool_results, mca_results):
             # dices = (dice_res_1, dark_dice_1[1], dark_dice_2[1], num_activated_1, num_activated_2)
 
             for tool_ in mca_results.keys():
-                masked_regions['{}1'.format(tool_)] = keep_roi(mca_results[tool_][1][act_], r, image_parc)#, '{}1'.format(tool_))
-                masked_regions['{}2'.format(tool_)] = keep_roi(mca_results[tool_][2][act_], r, image_parc)#, '{}2'.format(tool_))
-                masked_regions['{}3'.format(tool_)] = keep_roi(mca_results[tool_][3][act_], r, image_parc)#, '{}3'.format(tool_))
+                masked_regions['{}1'.format(tool_)], s = keep_roi(mca_results[tool_][1][act_], r, image_parc)#, '{}1'.format(tool_))
+                act_bin.append(s)
+                masked_regions['{}2'.format(tool_)], s = keep_roi(mca_results[tool_][2][act_], r, image_parc)#, '{}2'.format(tool_))
+                act_bin.append(s)
+                masked_regions['{}3'.format(tool_)], s = keep_roi(mca_results[tool_][3][act_], r, image_parc)#, '{}3'.format(tool_))
+                act_bin.append(s)
 
                 dices_[regions[r]][act_]['mca']['{}1'.format(tool_)] = compute_dice(masked_regions['{}1'.format(tool_)], masked_regions['{}2'.format(tool_)])[0]
                 dices_[regions[r]][act_]['mca']['{}2'.format(tool_)] = compute_dice(masked_regions['{}1'.format(tool_)], masked_regions['{}3'.format(tool_)])[0]
                 dices_[regions[r]][act_]['mca']['{}3'.format(tool_)] = compute_dice(masked_regions['{}2'.format(tool_)], masked_regions['{}3'.format(tool_)])[0]
 
+            dframe2 = pd.DataFrame(np.array([act_bin]),
+                                   columns=file_cols)
+            dframe = dframe.append(dframe2, ignore_index=True)
+
+    dframe.to_csv('./data/active_regions.csv')
     dump_variable(dices_, retrieve_name(dices_)[0])
     return dices_
 
@@ -569,10 +624,10 @@ def plot_dices(dices_):
                 for i in [1, 2, 3]:
                     mca_mean.append(dices_[reg_][act_]['mca']['{}{}'.format(f1, i)])
                     mca_mean.append(dices_[reg_][act_]['mca']['{}{}'.format(f2, i)])
-                mca_list.append(mean(np.nan_to_num(mca_mean)))
+                mca_list.append(mean(mca_mean))
 
             # Get region sizes
-            tool_list = np.nan_to_num(tool_list)
+            # tool_list = np.nan_to_num(tool_list)
             r_sizes = []
             r_name = []
             for i in range(len(tool_list)):
@@ -584,12 +639,13 @@ def plot_dices(dices_):
             # Plot Dice values by region size
             tool_dice = np.array(tool_list)
             mca_dice = np.array(mca_list)
-            tool_dice_nonz = [ tool_dice[i] for i in range(len(tool_dice)) if tool_dice[i] != 0 and mca_dice[i] != 0]
-            mca_dice_nonz = [ mca_dice[i] for i in range(len(tool_dice)) if tool_dice[i] != 0 and mca_dice[i] != 0]
-            sizes_nonz = [ r_sizes[i] for i in range(len(tool_dice)) if tool_dice[i] != 0 and mca_dice[i] != 0]
+            tool_dice_nonz = [ tool_dice[i] for i in range(len(tool_dice)) if not (np.isnan(tool_dice[i]) or np.isnan(mca_dice[i]))]
+            mca_dice_nonz = [ mca_dice[i] for i in range(len(tool_dice)) if not (np.isnan(tool_dice[i]) or np.isnan(mca_dice[i]))]
+            sizes_nonz = [ r_sizes[i] for i in range(len(tool_dice)) if not (np.isnan(tool_dice[i]) or np.isnan(mca_dice[i]))]
             tools_nonz = [ tool_list[i] for i in range(len(tool_dice)) if tool_dice[i] != 0 and mca_dice[i] != 0]
             tool_dice = tool_dice_nonz
             mca_dice = mca_dice_nonz
+            # sizes_nonz = r_sizes
             print(len(tool_dice), len(mca_dice))
 
             # Is there a correlation between tool_dice and region size?
@@ -622,25 +678,33 @@ def print_gl_stats(path_):
     # Compute stats of variabilities (ignore NaNs as bg)    
     for type_ in ['thresh', 'unthresh']:
         for pair_ in ['fsl-spm', 'fsl-afni', 'afni-spm']:
-            bt_ = nib.load('{}{}-{}-std.nii.gz'.format(path_, pair_, type_))
-            bt_std_data = bt_.get_fdata()
-            bt_std_mean = np.nanmean(bt_std_data)
-            bt_std_std = np.nanstd(bt_std_data)
-            print('BT variability of tstats in {} {}:\nMean {}\nStd. {}'.format(pair_, type_, bt_std_mean, bt_std_std))
+            bt_ = nib.load('{}{}-{}-abs.nii.gz'.format(path_, pair_, type_))
+            bt_abs_data = bt_.get_fdata()
+            bt_abs_mean = np.nanmean(bt_abs_data)
+            bt_abs_std = np.nanstd(bt_abs_data)
+            print('BT variability of tstats in {} {}:\nMean {}\nStd. {}'.format(pair_, type_, bt_abs_mean, bt_abs_std))
 
         for tool_ in ['fsl', 'spm', 'afni']:
-            wt2_ = nib.load('{}{}-{}-std.nii.gz'.format(path_, tool_, type_))
-            wt2_std_data = wt2_.get_fdata()
-            wt2_std_mean = np.nanmean(wt2_std_data)
-            wt2_std_std = np.nanstd(wt2_std_data)
-            print('WT variability of tstats in {} {}:\nMean {}\nStd. {}'.format(tool_, type_, wt2_std_mean, wt2_std_std))
-
+            wt2_ = nib.load('{}fuzzy-{}-{}-abs.nii.gz'.format(path_, tool_, type_))
+            wt2_abs_data = wt2_.get_fdata()
+            wt2_abs_mean = np.nanmean(wt2_abs_data)
+            wt2_abs_std = np.nanstd(wt2_abs_data)
+            print('WT variability of tstats in {} {}:\nMean {}\nStd. {}'.format(tool_, type_, wt2_abs_mean, wt2_abs_std))
+        
+        # FSL stats at global virtual precision t=17
+        if type_ == 'unthresh':
+            img_ = './data/abs/FL-FSL/p17_fsl_unthresh_abs.nii.gz'
+            wt2_ = nib.load(img_)
+            wt2_abs_data = wt2_.get_fdata()
+            wt2_abs_mean = np.nanmean(wt2_abs_data)
+            wt2_abs_std = np.nanstd(wt2_abs_data)
+            print('WT variability of tstats in FSL {} at precision t=17 bits:\nMean {}\nStd. {}'.format(type_, wt2_abs_mean, wt2_abs_std))
         print("stop")
 
 
 def print_sl_stats(path_):
     # Compute Mean of std over subjects (ignore NaNs as bg)
-    min_sbj = 100
+    min_sbj = 1000
     max_sbj = 0
     all_wt_list = {}
     all_bt_list = {}
@@ -648,43 +712,43 @@ def print_sl_stats(path_):
         wt_list = []
         bt_list = []
         for pair_ in ['fsl-spm', 'fsl-afni', 'afni-spm']:
-            bt_ = nib.load(os.path.join(path_, 'sbj{}-{}-unthresh-std.nii.gz'.format('%.2d' % i, pair_)))
-            bt_std_data = bt_.get_fdata()
-            bt_std_mean = np.nanmean(bt_std_data)
-            bt_list.append(bt_std_mean)
-            bt_std_std = np.nanstd(bt_std_data)
+            bt_ = nib.load(os.path.join(path_, 'sbj{}-{}-unthresh-abs.nii.gz'.format('%.2d' % i, pair_)))
+            bt_abs_data = bt_.get_fdata()
+            bt_abs_mean = np.nanmean(bt_abs_data)
+            bt_list.append(bt_abs_mean)
+            bt_abs_std = np.nanstd(bt_abs_data)
             if pair_ in all_bt_list.keys():
                 tmp = all_bt_list[pair_]['mean']
-                all_bt_list[pair_]['mean'] = bt_std_mean + tmp
+                all_bt_list[pair_]['mean'] = bt_abs_mean + tmp
                 tmp = all_bt_list[pair_]['std']
-                all_bt_list[pair_]['std'] = bt_std_std + tmp
+                all_bt_list[pair_]['std'] = bt_abs_std + tmp
             else:
                 all_bt_list[pair_] = {}
-                all_bt_list[pair_]['mean'] = bt_std_mean
-                all_bt_list[pair_]['std'] = bt_std_std
+                all_bt_list[pair_]['mean'] = bt_abs_mean
+                all_bt_list[pair_]['std'] = bt_abs_std
 
         for tool_ in ['fsl', 'spm', 'afni']:
-            wt_ = nib.load(os.path.join(path_, 'sbj{}-{}-unthresh-std.nii.gz'.format('%.2d' % i, tool_)))
-            wt_std_data = wt_.get_fdata()
-            wt_std_mean = np.nanmean(wt_std_data)
-            wt_list.append(wt_std_mean)
-            wt_std_std = np.nanstd(wt_std_data)
+            wt_ = nib.load(os.path.join(path_, 'sbj{}-fuzzy-{}-unthresh-abs.nii.gz'.format('%.2d' % i, tool_)))
+            wt_abs_data = wt_.get_fdata()
+            wt_abs_mean = np.nanmean(wt_abs_data)
+            wt_list.append(wt_abs_mean)
+            wt_abs_std = np.nanstd(wt_abs_data)
             if tool_ in all_wt_list.keys():
                 tmp = all_wt_list[tool_]['mean']
-                all_wt_list[tool_]['mean'] = wt_std_mean + tmp
+                all_wt_list[tool_]['mean'] = wt_abs_mean + tmp
                 tmp = all_wt_list[tool_]['std']
-                all_wt_list[tool_]['std'] = wt_std_std + tmp
+                all_wt_list[tool_]['std'] = wt_abs_std + tmp
             else:
                 all_wt_list[tool_] = {}
-                all_wt_list[tool_]['mean'] = wt_std_mean
-                all_wt_list[tool_]['std'] = wt_std_std
+                all_wt_list[tool_]['mean'] = wt_abs_mean
+                all_wt_list[tool_]['std'] = wt_abs_std
 
         if mean(wt_list) > max_sbj:
             max_sbj = mean(wt_list)
             i_max = i
             max_sbj_bt = mean(bt_list)
 
-    print('Subject {} has the highest WT variability as the average std of {}\n BT std is {}'.format(i_max, max_sbj, max_sbj_bt))
+    print('Subject {} has the highest WT variability with average absolute differences of {}\n BT avg abs diff is {}'.format(i_max, max_sbj, max_sbj_bt))
     
     for pair_ in ['fsl-spm', 'fsl-afni', 'afni-spm']:
         print('BT variability of tstats in {} unthresholded:\nMean {}\nStd. {}'.format(pair_, all_bt_list[pair_]['mean']/16, all_bt_list[pair_]['std']/16))
@@ -694,29 +758,81 @@ def print_sl_stats(path_):
     print('stop')
 
 
-def compute_stat_test():
-    path_ = 'data/std/'
+def compute_stat_test(path_):
     for type_ in ['unthresh', 'thresh']:
         for pair_ in ['fsl-spm', 'fsl-afni', 'afni-spm']:
-            bt_ = nib.load('{}{}-{}-std.nii.gz'.format(path_, pair_, type_))
-            bt_std_data = bt_.get_fdata()
+            gvp = False
+            num_sample = int(1e3)
+
+            bt_ = nib.load('{}{}-{}-abs.nii.gz'.format(path_, pair_, type_))
+            bt_abs_data = bt_.get_fdata()
+            bg_ = np.where((np.isnan(bt_.get_fdata())) , False, True)
+            bt_img = np.nan_to_num(bt_abs_data)[bg_]
 
             t1, t2 = pair_.split('-')
-            wt1_ = nib.load('{}{}-{}-std.nii.gz'.format(path_, t1, type_))
-            wt1_std_data = wt1_.get_fdata()
-
-            wt2_ = nib.load('{}{}-{}-std.nii.gz'.format(path_, t2, type_))
-            wt2_std_data = wt2_.get_fdata()
-
-            bg_ = np.where((np.isnan(bt_.get_fdata())) , False, True)
-            bt_img = np.nan_to_num(bt_std_data)[bg_]
-
+            wt1_ = nib.load('{}fuzzy-{}-{}-abs.nii.gz'.format(path_, t1, type_))
+            wt1_abs_data = wt1_.get_fdata()
             bg_ = np.where((np.isnan(wt1_.get_fdata())) , False, True)
-            img1 = np.nan_to_num(wt1_std_data)[bg_]
+            img1 = np.nan_to_num(wt1_abs_data)[bg_]
+
+            wt2_ = nib.load('{}fuzzy-{}-{}-abs.nii.gz'.format(path_, t2, type_))
+            wt2_abs_data = wt2_.get_fdata()
             bg_ = np.where((np.isnan(wt2_.get_fdata())) , False, True)
-            img2 = np.nan_to_num(wt2_std_data)[bg_]
-            # print('WT img1 mean {} and img2 mean {} and bt_img mean {} '.format(mean(img1), mean(img2), mean(bt_img)))
+            img2 = np.nan_to_num(wt2_abs_data)[bg_]
+
+            if type_ == 'unthresh' and t1 == 'fsl':
+                gvp = True
+                wtGvp = nib.load('./data/abs/FL-FSL/p17_fsl_unthresh_abs.nii.gz')
+                wtGvp_abs_data = wtGvp.get_fdata()
+                bg_ = np.where((np.isnan(wtGvp.get_fdata())) , False, True)
+                imgGvp = np.nan_to_num(wtGvp_abs_data)[bg_]
+                resGvp = resample(imgGvp, num_sample)
+
+            res_bt = resample(bt_img, num_sample)
+            res1_ = resample(img1, num_sample)
+            res2_ = resample(img2, num_sample)
+
+            t_stat1, p_val1 = stat.wilcoxon(res_bt, res1_)
+            t_stat2, p_val2 = stat.wilcoxon(res_bt, res2_)
+            print("wilcoxon-test between BT({}) and WT({}) is {} and p-value {}".format(pair_, t1, t_stat1, p_val1*6))
+            print("wilcoxon-test between BT({}) and WT({}) is {} and p-value {}".format(pair_, t2, t_stat2, p_val2*6))
+
+            t_stat1, p_val1 = stat.ttest_ind(res_bt, res1_)
+            t_stat2, p_val2 = stat.ttest_ind(res_bt, res2_)
+            print("t-test between BT({}) and WT({}) is {} and p-value {}".format(pair_, t1, t_stat1, p_val1*6))
+            print("t-test between BT({}) and WT({}) is {} and p-value {}".format(pair_, t2, t_stat2, p_val2*6))
+
+            if gvp:
+                t_statGvp, p_valGvp = stat.wilcoxon(res_bt, resGvp)
+                print("wilcoxon-test between BT({}) and WT({}) at GVP t=17 bits is {} and p-value {}".format(pair_, 'FSL', t_statGvp, p_valGvp*6))
+                t_statGvp, p_valGvp = stat.ttest_ind(res_bt, resGvp)
+                print("t-test between BT({}) and WT({}) at GVP t=17 bits is {} and p-value {}".format(pair_, 'FSL', t_statGvp, p_valGvp*6))
+
+            print('stop')
+
+
+def compute_sbj_stat_test(path_):
+    for i in range(1, 17):
+        print(f"Subject{'%.2d' % i}:")
+        for pair_ in ['fsl-spm', 'fsl-afni', 'afni-spm']:
             num_sample = int(1e3)
+            bt_ = nib.load('{}sbj{}-{}-unthresh-abs.nii.gz'.format(path_, '%.2d' % i, pair_))
+            bt_abs_data = bt_.get_fdata()
+            bg_ = np.where((np.isnan(bt_.get_fdata())) , False, True)
+            bt_img = np.nan_to_num(bt_abs_data)[bg_]
+
+            t1, t2 = pair_.split('-')
+            wt1_ = nib.load('{}sbj{}-fuzzy-{}-unthresh-abs.nii.gz'.format(path_, '%.2d' % i, t1))
+            wt1_abs_data = wt1_.get_fdata()
+            bg_ = np.where((np.isnan(wt1_.get_fdata())) , False, True)
+            img1 = np.nan_to_num(wt1_abs_data)[bg_]
+
+            wt2_ = nib.load('{}sbj{}-fuzzy-{}-unthresh-abs.nii.gz'.format(path_, '%.2d' % i, t2))
+            wt2_abs_data = wt2_.get_fdata()
+            bg_ = np.where((np.isnan(wt2_.get_fdata())) , False, True)
+            img2 = np.nan_to_num(wt2_abs_data)[bg_]
+
+            # print('WT img1 mean {} and img2 mean {} and bt_img mean {} '.format(mean(img1), mean(img2), mean(bt_img)))
             res_bt = resample(bt_img, num_sample)
             res1_ = resample(img1, num_sample)
             res2_ = resample(img2, num_sample)
@@ -774,6 +890,8 @@ def main(args=None):
     tool_results['fsl']['stat_file'] = './results/ds000001/tools/FSL/tstat1.nii.gz'
     tool_results['fsl']['act_deact'] = './results/ds000001/tools/FSL/fsl.nii.gz'
     tool_results['fsl']['SBJ'] = './results/ds000001/tools/FSL/subject_level/sbjNUM_tstat1.nii.gz' # NUM will replace with the sbj number
+    tool_results['fsl']['SBJ-AR'] = 'results/ds000001/tools/FSL/subject_level/LEVEL1/sub-NUM/run-01.feat/reg/highres2standard.nii.gz' # anatomical registration image
+    tool_results['fsl']['SBJ-FR'] = 'results/ds000001/tools/FSL/subject_level/LEVEL1/sub-NUM/run-01.feat/reg/example_func2standard.nii.gz' # functional registration image
     tool_results['spm'] = {}
     tool_results['spm']['exc_set_file'] = './results/ds000001/tools/SPM/Octave/spm_exc_set.nii.gz'
     tool_results['spm']['exc_set_file_neg'] = './results/ds000001/tools/SPM/Octave/spm_exc_set_neg.nii.gz'
@@ -789,6 +907,7 @@ def main(args=None):
     tool_results['afni']['stat_file'] = './results/ds000001/tools/AFNI/3dMEMA_result_t_stat_masked.nii.gz'
     tool_results['afni']['act_deact'] = './results/ds000001/tools/AFNI/afni.nii.gz'
     tool_results['afni']['SBJ'] = './results/ds000001/tools/AFNI/subject_level/tstats/sbjNUM_result_t_stat_masked.nii.gz' # NUM will replace with the sbj number
+    tool_results['afni']['SBJ-AR'] = './results/original/AFNI/subject_level/registrations/anatQQ_images/anatQQ.sub-NUM.nii'
 
     fsl_mca = {}
     fsl_mca[1] = {}
@@ -858,40 +977,44 @@ def main(args=None):
     mca_results['afni'] = {}
     mca_results['afni'] = afni_mca
     
-    std_path = 'data/std/'
+    abs_path = 'data/abs/'
     ### Combine activation and deactivation maps
     # combine_thresh(tool_results, mca_results)
 
-    ### Create std images
+    ### Create abs diff images
     # var_between_tool(tool_results) #BT
     # var_between_fuzzy(mca_results) #WT
-    ### Create ratio images between BT and WT std images
-    # get_ratio(std_path)
-    # get_diff(std_path)
-    ### Plot correlation of variances between BT and FL (Fig 4)
-    #plot_corr_variances()
-    ### std in different precisions in WT
+    ### Create diff images between BT and WT abs diff images
+    # get_diff(abs_path)
+
+    ### abs diff in different precisions in WT
     # path_ = './results/ds000001/fuzzy/'
-    # compute_std_WT(path_)
+    # compute_abs_WT(path_)
     ### Global nearest precision
     # p_nearest, all_rmse = global_nearest_precision()
     # print(p_nearest)
     # plot_rmse_nearest(all_rmse)
 
-    ### Compute Dice scores and then plot (Fig 2)
-    image_parc = './data/MNI-parcellation/HCPMMP1_on_MNI152_ICBM2009a_nlin_resampled.splitLR.nii.gz'
-    regions_txt = './data/MNI-parcellation/HCP-MMP1_on_MNI152_ICBM2009a_nlin.txt'
-    if os.path.exists('./data/dices_.pkl'):
-        dices_ = load_variable('dices_')
-        plot_dices(dices_)
-    else:
-        dices_ = get_dice_values(regions_txt, image_parc, tool_results, mca_results)
-        plot_dices(dices_)
+    ### Plot correlation of variances between BT and FL (Fig 4)
+    # plot_corr_variances_group(tool_results)
+    # plot_corr_variances_gvp(tool_results)
+    # plot_corr_variances_sbj(tool_results)
 
-    ### Print stats (Table 2)
-    # print_gl_stats(std_path)
-    # print_sl_stats(std_path)
-    # compute_stat_test()
+    ### Compute Dice scores and then plot
+    # image_parc = './data/MNI-parcellation/HCPMMP1_on_MNI152_ICBM2009a_nlin_resampled.splitLR.nii.gz'
+    # regions_txt = './data/MNI-parcellation/HCP-MMP1_on_MNI152_ICBM2009a_nlin.txt'
+    # if os.path.exists('./data/dices_.pkl'):
+    #     dices_ = load_variable('dices_')
+    #     plot_dices(dices_)
+    # else:
+    #     dices_ = get_dice_values(regions_txt, image_parc, tool_results, mca_results)
+    #     plot_dices(dices_)
+
+    ### Print stats 
+    # print_gl_stats(abs_path)
+    # print_sl_stats(abs_path)
+    # compute_stat_test(abs_path)
+    # compute_sbj_stat_test(abs_path)
 
 if __name__ == '__main__':
     main()
