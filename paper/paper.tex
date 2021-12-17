@@ -64,7 +64,7 @@
   Variability has been broadly observed in functional MRI analyses across both
   differences in analytic tools and numerical instabilities. However,
   the relationship between numerical (within-tool) and between-tool variabilities for
-  given analysis is unclear. We extended a previous comparison
+  a given analysis is unclear. We extended a previous comparison
   of fMRI analysis software libraries (namely FSL, AFNI, and SPM) and relate the observed differences to the numerical
   variability observed using Monte-Carlo arithmetic. We found that
   between-tool variability was consistently larger than numerical variability in group-level analyses,
@@ -72,71 +72,85 @@
   Interestingly, between-tool variability and
   machine error appeared moderately correlated ($r > 0.5$) in all tested conditions.
   Finally, we found that numerical variability had effects of similar magnitude to between-tool
-  variability when errors were introduced at the precision of 17 bits --- a
-  precision level found in commonly-used libraries \gk{What does this mean? They only have precision of 17, or they use data that is 17 bits?}. \yohan{agree with Greg, it is unclear and a strong assertion!} \camille{It is not entirely clear to me how this relates to the previous conclusions that BT variability was consistently larger than machine error} Our findings motivate the
+  variability when numerical errors are introduced at the precision of 17 bits --- a
+  precision level found in commonly-used libraries \gk{What does this mean? They only have precision of 17, or they use data that is 17 bits?}.
+   \yohan{agree with Greg, it is unclear and a strong assertion!}
+   \camille{It is not entirely clear to me how this relates to the previous conclusions that BT variability 
+   was consistently larger than machine error} Our findings motivate the
   continued investigation of numerical instability in neuroimaging, and position it
   as a possible proxy for studying arbitrary between-tool variations.
 \end{abstract}
 
 \section{Introduction}
 
-Software variability has been highlighted as an important source of error
-in fMRI analysis, originating from mainly two factors: between-tool
-variability denotes differences in the outcomes of different
-software toolboxes --- such as FSL, AFNI and SPM --- when analyzing the same dataset
-using similar methods \gk{this sentence says "two factors" but then only mentioned between tool. Also, it is too long}. \yohan{What do you mean by methods? Numerical schemes? If so, are we sure that theses tools are using the same numerical schemes?} \camille{I also had highlighed the 2 here, I think we could use "multiple factors" --> in practice we could also add different types of within-software variability (in the form of changing algorithms and/or parameters for a given step)} Numerical variability, in contrast, denotes
-differences in outcomes of the same analytical toolbox
-executed in different environments – such as different operating systems or
-different hardware platforms \gk{you mention these two examples of numerical variability, but you use neither in this paper. Why not mention the one you use?}. This manuscript investigates the extent to
-which both types of variability relate to each other.
+Recent explorations of the analytical flexibility in brain imaging across
+tools, platforms, or teams, have demonstrated unexpected variability in
+results, even when analyzing identical data~\cite{botvinik2020variability}. Possible explanations for
+such discrepancies include methodological flexibility~\cite{carp2012plurality} and software
+variability, the focus of this paper. A recommendation to address this
+variability is to adopt a ``multiverse" approach that analyzes the same
+dataset multiple times in different software environments, and ultimately
+conclude from the resulting set of outcomes. However, the range of
+analytical conditions to be included in such multiverse analyses remains
+poorly defined, both because of the boundless set of tools and
+configurations, and that the precise causes of software variability remain
+unclear. This lack of clarity is in part because fMRI analyses depend on
+complex software stacks that leverage low-level libraries provided by the
+operating system (e.g.,mathematical functions), general scientific
+computing methods (e.g., optimization toolboxes), and specific fMRI
+analysis tools (e.g., spatial image normalization methods). At each level,
+conceptual and implementation differences across experiments may each
+create substantial variability in the analysis outcomes.
 
-Numerical variability stems from errors introduced in floating point
-computations by \yohanmod{numerical} rounding, cancellation, and absorption~\cite{muller2018handbook} \gk{only? What about poor conditioning + random effects + noise in data?}. In
-practice, the occurrence of such errors is affected by variations in
-hardware, software dependencies, compilation, parallelization, and most
-likely other factors \gk{what does "most likely other factors" mean?}. In the best case, the impact of such errors and the induced
-variations is in the range of \yohanmod{1} \yohan{1/2 ulp for round-to-nearest} unit in the last place (ulp) --- also known
-as machine error, the difference between two successive floating-point
-numbers. However, when computations depend on imprecise libraries,
-numerical error may vary by several ulps. For instance, the \yohan{maximal} numerical error
-of the complementary error function (erfc) is larger than 3 ulps in several
-mathematical libraries~\cite{zimmermann:hal-03141101}, implying that an update of this function could introduce
-numerical \yohanmod{perturbations} \yohan{differences} larger than 3 ulps. Due to numerical instability,
-machine error may amplify during its propagation through analyses \yohan{do you mean calculations?},
-resulting in considerable loss of precision in final results. In fMRI analysis,
-numerical variability produced by Linux updates has been shown to result in Dice
-coefficients ranging from 0.0 to 1.0 for ICA components produced by FSL
-MELODIC~\cite{Glatard2015} \gk{there isn't really context for what this result means, yet. Is this a lot? Dice hasn't been explained. Also, how are ICA components (weighted vectors) compared via Dice (a measure for binary image/vector comparison)? }.
+As a result of these factors, the variability resulting from the use of
+different fMRI analysis tools implementing similar analytical approaches
+(between-tool variability) can reach worrying magnitudes. For instance, the
+study in~\cite{bowring2019exploring} compared the results produced by the
+three main fMRI analysis toolboxes, namely SPM, AFNI and FSL, using similar
+pipelines. It reported limited similarity between the activation clusters
+produced by these tools, measured by Dice coefficients ranging from 0.0 to
+0.684 \tristan{check values in erratum}, where 0 indicates non-overlapping
+clusters and 1 means identical clusters. More recently, the work
+in~\cite{Li2021.12.01.470790} also showed a low similarity between the
+results produced by five different tools (ABCD, CCS, CPAC, DPARSF, fMRIPrep
+\tristan{Ali, could you add refs to these tools from Li et al 2021? Also
+for SPM, FSL and AFNI in the previous sentence}) and identified the main
+factors contributing to these differences. The magnitude of the highlighted
+differences suggest that between-tool variability may be playing a critical
+role in the reproducibility of fMRI analysis overall. 
 
-Between-tool variability is not a surprising concept: different programs
-executed on the same data may obviously produce different results \gk{even when doing conceptually the same thing? Why? Why is this obvious?}. However,
-in fMRI analysis, programs all aim to estimate brain activity from measured
-variations in the BOLD signal, which is not expected to be measurably
-impacted by computational artifacts \gk{Why wouldn't it be? Especially if you state that it isn't surprising for tools to lead to different results, how come you expect fMRI to not suffer from this?}. \yohan{+1} Therefore, the observation reported
-in~\cite{bowring2019exploring} that the three main fMRI analysis toolboxes
-may result in marked analytical differences (Dice coefficients ranging from
-0.000 to 0.684 \camille{Apologies I don't have the numbers on the top of my head but can I confirm taht those were taken from the erratum that was published after the paper?} for thresholded activation maps), has raised substantial
-concern. In a follow-up study~\cite{bowring2021isolating}, the same authors
-isolated the analytical components where the pipelines diverge,
-highlighting a major impact of the signal model and suggesting that the
-root-cause for between-tool variability depends on the analysis design and
-task paradigm \gk{If you state this finding, you need to unpack what it means a little bit. What part of analysis design? By task paradigm do you essentially mean the expected effect-size for the task that individuals are performing within the scanner?} \camille{would be worth adding here that the identified main sources of variations were different across the 3 studies}. Further, the work in~\cite{Li2021.12.01.470790} found
-moderate agreement between results produced by five independent fMRI
-analysis pipelines and analyzed in details the components that led to these
-variations \gk{This sentence feels inconsistent and counter to the previous, and also doesn't tell us their findings; what components led to variations?}. Between-tool variability is supposedly an important determinant
-of the substantial analytical variability recently observed in
-fMRI~\cite{botvinik2020variability} \gk{arguably, one of the larger issues that the NARPS result showed us was that people construct and test ``equivalent'' hypotheses differently, so despite highly similar data they will arrive at different conclusions}.
+The variability resulting from differences in lower-level software
+libraries (within-tool variability) has also been quantified in fMRI. The
+study in~\cite{Glatard2015} mentions a low similarity between the activation clusters
+produced by FSL using different versions of the GNU/Linux system, measured
+by Dice coefficients ranging from 0.0 to 1.0, covering the full spectrum of
+possible similarities. This variability resulted from updates in the GNU
+mathematical library and can be properly simulated by introducing small
+numerical perturbations on the results returned by mathematical functions~\cite{salari2021accurate}.
+Here again, these observations could partly explain the differences
+reported in~\cite{botvinik2020variability}.
 
-We investigate the relationship between numerical and between-tool
-variability through two main questions: (1) what is the relative magnitude of
-within-tool (numerical) variability and between-tool variability, and (2) is there an association between within- and between-tool variability. The first question determines the extent to which each variability
-source may impact current fMRI results, and which one should be addressed or leveraged
-in priority. The second question may provide deeper insights on the origins
-of software variability. Conceptually, both types of variability may
-reflect a single solution space shaped by local minima and
-ill-conditioning \gk{this feels a bit clumsily worded, but I don't immediately have a rewrite that comes to mind }, which could be explored through numerical or software
-perturbations.
+The relationship between within- and between-tool variability are poorly
+understood, but could play an important role in the construction of
+multiverse study environments. Importantly, if associations exist between
+these two types of variability, they may both originate to some degree from
+the inherent instability of brain activity estimation from BOLD signal
+variations, and shed light on the numerical confidence of results. Under
+this hypothesis, small perturbations introduced by low-level software
+updates could trigger effects correlated with those created by tool
+variations.
 
+This paper investigates the relationship between numerical stability -- used
+as a proxy for within-tool variability -- and between-tool variability
+through two main questions:
+\begin{enumerate}
+\item what is the relative magnitude of within-tool variability and between-tool variability, and
+\item is there an association between within- and between-tool variability.
+\end{enumerate}
+
+We address these two questions by reproducing the study in~\cite{bowring2019exploring} and
+extending it with the addition of numerical perturbations of controlled
+magnitude.
 
 \section{Materials and Methods}
 
@@ -295,7 +309,7 @@ set the virtual precision to $t=24$~bits for single-precision values.
 We evaluated WT and BT variability for thresholded as well as unthresholded
 group-level and subject-level t-statistics maps by computing the
 standard deviation of t-statistic maps across pipelines or Fuzzy Libmath samples, respectively. For BT, we computed the standard deviation
-across a given pair of tools \camille{standard dev with 2 samples ? --> cf. discussion on mattermost).
+across a given pair of tools \camille{standard dev with 2 samples ? cf. discussion on mattermost}.
 For WT, we computed the standard deviation across the three
 Fuzzy Libmath samples of a given tool. We computed WT variability for a pair of tools (A, B) as follows:
 \begin{equation}
