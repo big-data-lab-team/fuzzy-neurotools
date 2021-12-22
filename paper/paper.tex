@@ -411,17 +411,19 @@ in [0.60, 0.62], p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps}-\textbf{D}).
 \begin{figure*}[ht]
   \centering
   % \fbox{\begin{minipage}{\dimexpr \textwidth-2\fboxsep-2\fboxrule}
-  \begin{subfigure}[ht]{0.9\textwidth}
+  \begin{subfigure}[ht]{.9\textwidth}
     \centering
-    \includegraphics[width=0.9\textwidth]{figures/abs/gl-unthresh.png}
+    \includegraphics[width=.9\textwidth]{figures/gl-unthresh.png}
+    % \includegraphics[width=0.9\textwidth]{figures/abs/gl-unthresh.png}
     %\caption{Standard deviation of thresholded t-statistics map on template surface}
   \end{subfigure}
-  \caption{Unthresholded group-level variability computed between tools
-    (\textbf{A}), within tools at machine error (\textbf{B}), difference
-    between them (\textbf{C}), and voxel-wise comparison (\textbf{D}). }
+  \caption{Unthresholded group-level differences computed between tools
+    (\textbf{A}), within tools at machine error (\textbf{B}),
+    and voxel-wise comparison of absolute differences (\textbf{C}). }
   \label{fig:unthresh-maps}
   % \end{minipage}}
 \end{figure*}
+
 
 \subsection{In subject analyses, WT variability approached BT variability in some regions}
 
@@ -438,11 +440,12 @@ variability appeared moderately correlated for all subjects (r in [0.484,
 %%%%%%%%%% Var. of Unthresh sbj05%%%%%%%%
 \begin{figure*}[ht]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/abs/sbj05-abs.png}
+  \includegraphics[width=0.9\textwidth]{figures/plots/Bland-Altman/unthresh-sbj05.png}
+  % \includegraphics[width=0.9\textwidth]{figures/abs/sbj05-abs.png}
   %\caption{Standard deviation of thresholded t-statistics map on template surface}
   \caption{For subject with highest WT variability,
-    unthresholded subject-level variability computed between tools (\textbf{A}), within tools at machine error (\textbf{B}),
-    and difference between them (\textbf{C}). \camille{If the changes are visible, I think that it would be useful to add the correspondant unthresholded maps for the reader to see where the differences are and what they "look like"}}
+    unthresholded subject-level variability computed between tools (\textbf{A}), and within tools at machine error (\textbf{B}).}
+    % and difference between them (\textbf{C}). \camille{If the changes are visible, I think that it would be useful to add the correspondant unthresholded maps for the reader to see where the differences are and what they "look like"}}
   \label{fig:unthresh-maps-sbj}
 \end{figure*}
 
@@ -459,17 +462,18 @@ However, Figure~\ref{fig:gnp-mni} shows that
 BT and WT reached comparable magnitudes in some regions. BT and WT remained
 moderately correlated at this precision \tristan{add r score}.
 
-%%%%%%%%%% plot different precisions%%%%%%%%
+%%%%%%%%%% plot at precision t=17%%%%%%%%
 \begin{figure*}[ht]
   \begin{subfigure}[ht]{\textwidth}
     \centering
-    \includegraphics[width=.75\textwidth]{figures/bg_global_precision.pdf}
+    \includegraphics[width=.55\textwidth]{figures/p17-diffs.pdf}
+    % \includegraphics[width=.75\textwidth]{figures/bg_global_precision.pdf}
     %\caption{Standard deviation of thresholded t-statistics map on template surface}
   \end{subfigure}
   %\caption{Standard deviation of thresholded t-statistics map on template surface}
-  \caption{Unthresholded group t-statistics absolute differences computed between tools (\textbf{A}),
-    within tools at the virtual precision of t=17~bits (\textbf{B}), difference between them (\textbf{C}), and
-    voxel-wise comparison (\textbf{D}).}
+  \caption{Unthresholded group t-statistics differences computed
+  within tools at the virtual precision of t=17~bits (\textbf{A}),
+  and voxel-wise comparison of absolute differences between BT and WT (\textbf{B}).}
   \label{fig:gnp-mni}
 \end{figure*}
 
@@ -496,13 +500,13 @@ a moderate agreement between WT instability and BT instability.
 \begin{figure*}[ht]
   \begin{subfigure}[ht]{\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{figures/abs/gl-thresh.png}
+    \includegraphics[width=\textwidth]{figures/plots/wt-tstats/act_deact-framed.png}
+    % \includegraphics[width=\textwidth]{figures/abs/gl-thresh.png}
     %\caption{Standard deviation of thresholded t-statistics map on template surface}
   \end{subfigure}
   \centering
-  \caption{Thresholded group-level variability computed between tools (\textbf{A}),
-    within tools at machine error (\textbf{B}), difference between them (\textbf{C}), and
-    confusion matrices of activation instability
+  \caption{Thresholded group-level t-statistics within tools at machine error for FSL (\textbf{A}),
+    SPM (\textbf{B}), AFNI (\textbf{C}), and confusion matrices of activation instability
     in BT and WT among the 360 regions of the HCP-MMP1.0 parcellation (\textbf{D}).}
   \label{fig:thresh-maps}
 \end{figure*}
@@ -634,9 +638,25 @@ WT.
 
 \begin{figure*}[ht]
   \centering
-  \includegraphics[width=.6\textwidth]{figures/sbj-abs-corr-unthresh-plot.png}
+  \includegraphics[width=.55\textwidth]{figures/sbj-abs-corr-unthresh-plot.png}
+  % \includegraphics[width=.6\textwidth]{figures/sbj-abs-corr-unthresh-plot.png}
   \caption{Comparison between BT and WT variabilty for 16 subjects.}
   \label{fig:unthresh-correlation-allsbj}
+\end{figure*}
+
+\section{Maps of t-statistics for subject with highest WT variability}
+\label{sec:supp-worst-subject}
+
+Figure~\ref{fig:unthresh-worst-sbj} plots the maps of t-statistics for each run of tools in WT.
+
+\begin{figure*}[ht]
+  \centering
+  \includegraphics[width=\textwidth]{figures/plots/wt-tstats/5-framed.png}
+  % \includegraphics[width=.6\textwidth]{figures/sbj-abs-corr-unthresh-plot.png}
+  \caption{For subject with highest WT variability, unthresholded subject-level t-statistics
+  within tools at machine error for FSL (\textbf{A}),
+  SPM (\textbf{B}), AFNI (\textbf{C}).}
+  \label{fig:unthresh-worst-sbj}
 \end{figure*}
 
 \end{document}
