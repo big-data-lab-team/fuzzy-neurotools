@@ -112,15 +112,16 @@ As a result of these factors, the variability resulting from the use of
 different fMRI analysis tools implementing similar analytical approaches
 (between-tool variability) can reach worrying magnitudes. For instance, the
 study in~\cite{bowring2019exploring} compared the results produced by the
-three main fMRI analysis toolboxes, namely SPM, AFNI and FSL, using similar
+three main fMRI analysis toolboxes, namely SPM~\cite{penny2011statistical},
+AFNI~\cite{cox1996afni} and FSL~\cite{jenkinson2012fsl}, using similar
 pipelines. It reported limited similarity between the activation clusters
 produced by these tools, measured by Dice coefficients ranging from 0.0 to
 0.769, where 0 indicates non-overlapping
 clusters and 1 means identical clusters. More recently, the work
 in~\cite{Li2021.12.01.470790} also showed a low similarity between the
-results produced by five different tools (ABCD, CCS, CPAC, DPARSF, fMRIPrep
-\tristan{Ali, could you add refs to these tools from Li et al 2021? Also
-for SPM, FSL and AFNI in the previous sentence}) and identified the main
+results produced by five different tools (ABCD~\cite{feczko2021adolescent},
+CCS~\cite{xu2015connectome}, CPAC~\cite{craddock2013towards}, DPARSF~\cite{yan2010dparsf},
+fMRIPrep~\cite{esteban2019fmriprep}) and identified the main
 factors contributing to these differences. The magnitude of the highlighted
 differences suggest that between-tool variability may be playing a critical
 role in the reproducibility of fMRI analysis overall. 
@@ -331,7 +332,6 @@ group-level and subject-level t-statistics maps by computing the absolute
 differences of t-statistic maps across tools. For WT, we computed the
 average absolute difference across the three Fuzzy Libmath samples.
 Moreover, we computed WT variability for a pair of tools as the sum of WT values for each tool.
-\tristan{Ali, can you update the figures to (1) show WT variability for each tool instead of for tool pairs (2) remove difference between BT and WT (3) show the XY plot as a joint histogram?}
 
 Further, from the thresholded maps, we determined regional instability
 between activation clusters in the 360 regions in the Human Connectome
@@ -373,10 +373,10 @@ and unthresholded maps (Wilcoxon signed-rank test and t-test p~\textless~$10^{-5
 % so we should probably say less than $10^{-5}$ or something else we could actually
 % arrive at with our number of repetitions, pipeline pairs, and samples.}
 % for all tests, t-test p=0 \gk{similar comment re p value} for all tests) \camille{p is smaller than a very small p but not zero?}.
-Figure~\ref{fig:unthresh-maps}-\textbf{A},\textbf{B},\textbf{C} shows that
+Figure~\ref{fig:unthresh-maps}-\textbf{A},\textbf{B} shows that
 these global differences were confirmed regionally.
 In addition, BT and WT variability appeared moderately correlated across voxels (Pearson's r
-in [0.60, 0.62], p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps}-\textbf{D}). 
+in [0.60, 0.62], p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps}-\textbf{C}). 
 % Interestingly, the correlation appears driven by a set of voxels exhibiting comparable BT and
 % WT values located around the identity line in Figure~\ref{fig:unthresh-maps}D, which, however, did not seem to have
 % any spatial consistency.
@@ -435,7 +435,7 @@ However, Figure~\ref{fig:unthresh-maps-sbj} shows that for
 some subjects, WT variability approached %and even surpassed
 BT in some regions. As for the group maps, BT and WT
 variability appeared moderately correlated for all subjects (r in [0.484,
-    0.633], p$< 10^{-5}$ for all subjects, see Supplemental Material~\ref{sec:supp-subjects}).
+    0.633], p$< 10^{-5}$ for all subjects, see Supplemental Material~\ref{sec:supp-subjects} and~\ref{sec:supp-worst-subject}).
 
 %%%%%%%%%% Var. of Unthresh sbj05%%%%%%%%
 \begin{figure*}[ht]
@@ -460,7 +460,8 @@ which was still lower than BT variability
 (Wilcoxon signed-rank test and t-test p~\textless~$10^{-5}$ for all tests).
 However, Figure~\ref{fig:gnp-mni} shows that
 BT and WT reached comparable magnitudes in some regions. BT and WT remained
-moderately correlated at this precision \tristan{add r score}.
+moderately correlated at this precision (Pearson's r
+in [0.53, 0.61], p$< 10^{-5}$, Figure~\ref{fig:gnp-mni}-\textbf{B}).
 
 %%%%%%%%%% plot at precision t=17%%%%%%%%
 \begin{figure*}[ht]
@@ -500,7 +501,8 @@ a moderate agreement between WT instability and BT instability.
 \begin{figure*}[ht]
   \begin{subfigure}[ht]{\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{figures/plots/wt-tstats/act_deact-framed.png}
+    \includegraphics[width=\textwidth]{figures/act_deact-marked.pdf}
+    % \includegraphics[width=\textwidth]{figures/plots/wt-tstats/act_deact-framed.png}
     % \includegraphics[width=\textwidth]{figures/abs/gl-thresh.png}
     %\caption{Standard deviation of thresholded t-statistics map on template surface}
   \end{subfigure}
@@ -647,11 +649,13 @@ WT.
 \section{Maps of t-statistics for subject with highest WT variability}
 \label{sec:supp-worst-subject}
 
-Figure~\ref{fig:unthresh-worst-sbj} plots the maps of t-statistics for each run of tools in WT.
+Figure~\ref{fig:unthresh-worst-sbj} plots the maps of t-statistics
+for each run of tools for the subject with highest WT variability.
 
 \begin{figure*}[ht]
   \centering
-  \includegraphics[width=\textwidth]{figures/plots/wt-tstats/5-framed.png}
+  \includegraphics[width=\textwidth]{figures/5-marked.pdf}
+  % \includegraphics[width=\textwidth]{figures/plots/wt-tstats/5-framed.png}
   % \includegraphics[width=.6\textwidth]{figures/sbj-abs-corr-unthresh-plot.png}
   \caption{For subject with highest WT variability, unthresholded subject-level t-statistics
   within tools at machine error for FSL (\textbf{A}),
