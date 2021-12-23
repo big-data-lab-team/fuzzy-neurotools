@@ -525,92 +525,105 @@ unthresholded maps.
     %\caption{Standard deviation of thresholded t-statistics map on template surface}
   \end{subfigure}
   \centering
-  \caption{Thresholded group-level t-statistics within tools at machine error for FSL (\textbf{A}),
-    SPM (\textbf{B}), AFNI (\textbf{C}), and confusion matrices of activation instability
-    in BT and WT among the 360 regions of the HCP-MMP1.0 parcellation (\textbf{D}).}
+  \caption{\textbf{A},\textbf{B},\textbf{C}: Thresholded group-level
+    t-statistics within tools at machine error for FSL (\textbf{A}), SPM
+    (\textbf{B}) and AFNI (\textbf{C}). Arrows point to activation clusters
+    impacted by both within- and between-tool variability \tristan{Ali: is it really the case? Can you make the arrows point more accurately to 
+    the clusters? Some of them are quite far from the cluster they point to.}.
+     \textbf{D}: Confusion matrices of
+    activation instability in BT and WT among the 360 regions of the
+    HCP-MMP1.0 parcellation.}
   \label{fig:thresh-maps}
 \end{figure*}
 
 
 \section{Discussion}
 
-In fMRI group analyses, within-tool variability remains an order of magnitude smaller
-than between-tool variability. Group analyses benefit from regularization
-of numerical noise, which is expected to increase as sample size
-increases. Therefore, for fMRI studies with large sample sizes, within-tool variability may be negligible with respect to between-tool variability. The
-recommendation made in~\cite{botvinik2020variability} to rely on
-``multiverse'' analyses where multiple analysis tools are compared is
-therefore likely to successfully correct for machine error in group
-studies. Nevertheless, within-tool variability remains substantial in group analyses
-that are based on a single tool, as is commonly the case in current fMRI
-studies. In particular, in our study, the inherent instability of
-thresholding was triggered by machine error in 9\% of 360 brain regions,
-which indicates that machine error might have impacted neuroscientific
-conclusions related to these regions.
+In fMRI group analyses, within-tool software variability remains an order
+of magnitude smaller than between-tool variability. This is likely
+explained by the fact that group analyses benefit from regularization of
+numerical noise, which is expected to increase with sample size. This finding is
+consistent with observations made in~\cite{kiar2020numerical} from
+diffusion MRI data where connectome graph statistics were found to be
+substantially unstable at the subject level while group distributions
+remained consistent. Therefore,
+for fMRI studies with large sample sizes, within-tool software variability
+may be neglected with respect to between-tool variability. In particular,
+multiverse analyses aggregating the outcome of multiple analysis tools are
+likely to successfully correct for machine error in such group studies.  Nevertheless, within-tool software variability remains
+substantial in group analyses that are based on a single tool, as is
+commonly the case in current fMRI studies. In particular, in our study, the
+inherent instability of thresholding was triggered by within-tool software
+variability in 9\% of 360 brain regions, which indicates that it might have
+impacted neuroscientific conclusions related to these regions.
 
-In subject-level analyses, within-tool and between-tool variabilty can become
+In subject-level analyses, within- and between-tool software variabilties can become
 of comparable magnitude for some subjects in some regions. This observation
 is particularly relevant to the development of fMRI-based biomarkers aiming
-at individualized phenotype predictions. Machine error is expected to play
+at individualized phenotype predictions. Machine error may play
 a non-negligible role in such analyses, even when predictions combine
-results produced by multiple tools. The observed regularization effect of
-group analyses toward numerical noise is consistent with observations made
-in~\cite{kiar2020numerical} from diffusion MRI where connectome graph
-statistics were found to be substantially unstable at the subject-level
-while group distributions remained consistent. \gk{this last sentence feels like it belongs in the previous paragraph, right before mentioning thresholding}
+results produced by multiple tools.
 
-For both group- and subject-level analyses, between-tool variability and within-tool
-variability were found to be moderately correlated. Even though between-tool
-variability and within-tool  variability are different in nature, this result
-suggests that in some cases both sources of variability may have a common
-cause that might be related to the conditioning of the BOLD signal
-estimation problem \gk{I wouldn't necessarily say it's because of "BOLD signal estimation problem", just "algorithms used to process"} in a specific dataset. Therefore, in some regions,
-instabilities of similar magnitude may be triggered by small numerical
-perturbations, model variations, or implementation differences. For
-instance, the analysis of datasets with high motion may be unstable both
-across tools and numerically.
+For both group- and subject-level analyses, between- and within-tool
+software variabilities were found to be moderately correlated. Even though
+both types of variability are different in nature, this result suggests
+that in some cases they may have a common cause that might be related to
+the conditioning of fMRI analysis in a specific dataset. Along these lines,
+in some regions, instabilities of similar magnitude may be triggered by
+small numerical perturbations, model variations, or implementation
+differences. For instance, high-motion datasets may trigger between- and
+within-tool instabilities similarly. 
 
 Therefore, numerical stability may be a suitable proxy to study
 between-tool variability. This speculation might be of practical value to
-address software variability at large given that numerical stability refers
-to a consistent mathematical framework whereas between-tool variability
-remains more empirical. Likewise, useful quality control metrics may be derived from numerical and between-tool stability.
+address software variability at large given that within-tool variability
+measurements can be automated while between-tool ones require substantial
+human intervention. Indeed, within-tool variability can be simulated
+irrespective of the particular analysis done, and with important sample
+sizes, while between-tool variability requires re-implementing analysis in
+different toolboxes and is limited to a few samples. Automated multi-verse
+frameworks could be developed to assess and possibly reduce within-tool
+variability as a pre-requisite for between-tool variability.
 
+\tristan{This paragraph needs to be revised as we can't conclude that from the data we have}
 The finding that numerical variability approached tool variability at the
 virtual precision of t=17~bits is interesting too. Indeed, while machine
-error generally introduces differences in the order of \yohanmod{1} \yohan{1/2} ulp
-\yohan{Are we talking about one arithmetic operation? Or an entire execution?}
---- or
-t=53~bits for double-precision values and t=24~bits for single-precision
-ones \yohan{I would not mix virtual precision and error measurement}--- common scientific software dependencies introduce larger errors
+error generally introduces perturbations on the least-significant bit of the mantissa,
+ones 
+% \yohan{I would not mix virtual precision and error measurement}\tristan{better?}
+common scientific software dependencies introduce larger perturbations
 .
 For instance, SciPy's 2D spline interpolation was recently found to be
-precise up to t=10~bits~\cite{pytracer} \tristan{Fix ref}
-\yohan{Same as previous, I would talk about significance or relative error, or remove the t= and not talk about virtual precision} and might therefore introduce
+precise up to 10~bits~\cite{pytracer}
+and its replacement by a more precise implementation might therefore introduce
 numerical perturbations leading to errors in the range of between-tool
-variability \tristan{Yohan, please check that sentence}. Such high errors
+variability. Such high errors
 might be triggered by updates in operating systems, Python, MATLAB, and
 other software dependencies.
-\yohan{The sentence is ok, just a picky point: the SciPy result you cited describes the precision of the spline implementation while at the end you're talking differences due to updates.
-  The nuance is that two versions may have a similar precision and so when you udpate your
-  system, the difference between both versions is low but each version can be ill-conditionned.}
+% \yohan{The sentence is ok, just a picky point: the SciPy result you cited
+% describes the precision of the spline implementation while at the end
+% you're talking differences due to updates. The nuance is that two versions
+% may have a similar precision and so when you udpate your system, the
+% difference between both versions is low but each version can be
+% ill-conditionned.}
+% \tristan{better?}
 
 Our results are limited by the type of numerical noise introduced in the
-analyses. We only perturbed the outputs of elementary
+analyses. Indeed, we only perturbed the outputs of elementary
 mathematical functions while numerical noise could creep in any
-floating-point operation. Our estimation of numerical variability should
-therefore be considered a lower bound. Our estimation of tool varability is
-also likely to be underestimated, having tested only 3 analytical pipelines
+floating-point operation. Therefore, our estimation of within-tool software variability should
+be considered a lower bound. Likewise, our estimation of tool varability is
+likely to be underestimated, having tested only 3 analytical pipelines
 among the thousands available~\cite{carp2012plurality}.
 
 In conclusion, our results motivate further numerical stability
-investigations in fMRI analysis pipelines. Pipeline-level analyses could be
-conducted to identify specific components that contribute to numerical
-variability, and if possible correct them accordingly. When instability is
-inherent to the analysis, sampling results distributions through numerical
-perturbations might improve stability, as explored in~\cite{kiar2021data}.
-Finally, pipeline-specific statistical corrections might be envisaged to
-account for numerical variability.
+investigations in fMRI analyses. Pipeline-level analyses could be conducted
+to identify specific components that contribute to numerical variability,
+and if possible correct them accordingly. Besides, in cases where
+instability is inherent to the analysis, sampling results distributions
+through numerical perturbations might improve stability, as explored
+in~\cite{kiar2021data}. Finally, pipeline-specific statistical corrections
+might be envisaged to account for within-tool software variability.
 
 \bibliographystyle{plain}
 \bibliography{biblio}
