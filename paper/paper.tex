@@ -74,12 +74,13 @@
   machine error. In subject analyses, the same within-tool software variability
   approached between-tool software variability in some regions for some subjects.
   Interestingly, within- and between-tool software variabilities appeared moderately
-  correlated ($r > 0.5$) in all tested conditions. Finally, we found that
-  within-tool software variability had effects of similar magnitude to between-tool
-  software variability when simulated from numerical perturbations introduced at the virtual
-  precision of 17 bits --- a high but plausible level of uncertainty for
-  scientific computing libraries. \tristan{Revise from latest results}
-  %  \gk{What does this mean? They only have
+  correlated ($r > 0.5$) in all tested conditions. 
+  % Finally, we found that
+  % within-tool software variability had effects of similar magnitude to between-tool
+  % software variability when simulated from numerical perturbations introduced at the virtual
+  % precision of 17 bits --- a high but plausible level of uncertainty for
+  % scientific computing libraries. \tristan{Revise from latest results}
+  % %  \gk{What does this mean? They only have
   % precision of 17, or they use data that is 17 bits?}
   %  \yohan{agree with Greg, it is unclear and a strong assertion!}
   %  \camille{It is not entirely clear to me how this relates to the previous
@@ -453,36 +454,36 @@ BT in some regions (Figure~\ref{fig:unthresh-maps-sbj}). As for the group maps, 
   \label{fig:unthresh-maps-sbj}
 \end{figure*}
 
-\subsection{At precision t=17~bits and in FSL, WT approached BT in the group analysis}
-\tristan{We cannot say that from the data that we have.}
-\tristan{Discuss subject-level BA plots.}
-While the previous results were obtained by simulating WT with numerical perturbations 
-at the magnitude of machine error, we also
-evaluated numerical variability across different virtual precisions for FSL
-and found that the virtual precision of t=17 bits minimized the RMSE
-between BT and WT in unthresholded group maps.
-FSL produced unthresholded group maps with $\mu=0.483$ and $\sigma=0.410$ at this virtual precision,
-which was still lower than BT variability
-(Wilcoxon signed-rank test and t-test p~\textless~$10^{-5}$ for all tests).
-However, Figure~\ref{fig:gnp-mni} shows that
-BT and WT reached comparable magnitudes in some regions. BT and WT remained
-moderately correlated at this precision (Pearson's r
-in [0.53, 0.61], p$< 10^{-5}$, Figure~\ref{fig:gnp-mni}-\textbf{B}).
+% \subsection{At precision t=17~bits and in FSL, WT approached BT in the group analysis}
+% \tristan{We cannot say that from the data that we have.}
+% \tristan{Discuss subject-level BA plots.}
+% While the previous results were obtained by simulating WT with numerical perturbations 
+% at the magnitude of machine error, we also
+% evaluated numerical variability across different virtual precisions for FSL
+% and found that the virtual precision of t=17 bits minimized the RMSE
+% between BT and WT in unthresholded group maps.
+% FSL produced unthresholded group maps with $\mu=0.483$ and $\sigma=0.410$ at this virtual precision,
+% which was still lower than BT variability
+% (Wilcoxon signed-rank test and t-test p~\textless~$10^{-5}$ for all tests).
+% However, Figure~\ref{fig:gnp-mni} shows that
+% BT and WT reached comparable magnitudes in some regions. BT and WT remained
+% moderately correlated at this precision (Pearson's r
+% in [0.53, 0.61], p$< 10^{-5}$, Figure~\ref{fig:gnp-mni}-\textbf{B}).
 
-%%%%%%%%%% plot at precision t=17%%%%%%%%
-\begin{figure*}[ht]
-  \begin{subfigure}[ht]{\textwidth}
-    \centering
-    \includegraphics[width=.55\textwidth]{figures/p17-diffs.pdf}
-    % \includegraphics[width=.75\textwidth]{figures/bg_global_precision.pdf}
-    %\caption{Standard deviation of thresholded t-statistics map on template surface}
-  \end{subfigure}
-  %\caption{Standard deviation of thresholded t-statistics map on template surface}
-  \caption{Unthresholded group t-statistics differences computed
-  within tools at the virtual precision of t=17~bits (\textbf{A}),
-  and voxel-wise comparison of absolute differences between BT and WT (\textbf{B}).}
-  \label{fig:gnp-mni}
-\end{figure*}
+% %%%%%%%%%% plot at precision t=17%%%%%%%%
+% \begin{figure*}[ht]
+%   \begin{subfigure}[ht]{\textwidth}
+%     \centering
+%     \includegraphics[width=.55\textwidth]{figures/p17-diffs.pdf}
+%     % \includegraphics[width=.75\textwidth]{figures/bg_global_precision.pdf}
+%     %\caption{Standard deviation of thresholded t-statistics map on template surface}
+%   \end{subfigure}
+%   %\caption{Standard deviation of thresholded t-statistics map on template surface}
+%   \caption{Unthresholded group t-statistics differences computed
+%   within tools at the virtual precision of t=17~bits (\textbf{A}),
+%   and voxel-wise comparison of absolute differences between BT and WT (\textbf{B}).}
+%   \label{fig:gnp-mni}
+% \end{figure*}
 
 
 \subsection{Previous results were confirmed in thresholded group maps}
@@ -528,8 +529,7 @@ unthresholded maps.
   \caption{\textbf{A},\textbf{B},\textbf{C}: Thresholded group-level
     t-statistics within tools at machine error for FSL (\textbf{A}), SPM
     (\textbf{B}) and AFNI (\textbf{C}). Arrows point to activation clusters
-    impacted by both within- and between-tool variability \tristan{Ali: is it really the case? Can you make the arrows point more accurately to 
-    the clusters? Some of them are quite far from the cluster they point to.}\ali{Yes, it's the case.}.
+    impacted by both within- and between-tool variability.
      \textbf{D}: Confusion matrices of
     activation instability in BT and WT among the 360 regions of the
     HCP-MMP1.0 parcellation.}
@@ -585,21 +585,21 @@ different toolboxes and is limited to a few samples. Automated multi-verse
 frameworks could be developed to assess and possibly reduce within-tool
 variability as a pre-requisite for between-tool variability.
 
-\tristan{This paragraph needs to be revised as we can't conclude that from the data we have}
-The finding that numerical variability approached tool variability at the
-virtual precision of t=17~bits is interesting too. Indeed, while machine
-error generally introduces perturbations on the least-significant bit of the mantissa,
-ones 
-% \yohan{I would not mix virtual precision and error measurement}\tristan{better?}
-common scientific software dependencies introduce larger perturbations
-.
-For instance, SciPy's 2D spline interpolation was recently found to be
-precise up to 10~bits~\cite{pytracer}
-and its replacement by a more precise implementation might therefore introduce
-numerical perturbations leading to errors in the range of between-tool
-variability. Such high errors
-might be triggered by updates in operating systems, Python, MATLAB, and
-other software dependencies.
+% \tristan{This paragraph needs to be revised as we can't conclude that from the data we have}
+% The finding that numerical variability approached tool variability at the
+% virtual precision of t=17~bits is interesting too. Indeed, while machine
+% error generally introduces perturbations on the least-significant bit of the mantissa,
+% ones 
+% % \yohan{I would not mix virtual precision and error measurement}\tristan{better?}
+% common scientific software dependencies introduce larger perturbations
+% .
+% For instance, SciPy's 2D spline interpolation was recently found to be
+% precise up to 10~bits~\cite{pytracer}
+% and its replacement by a more precise implementation might therefore introduce
+% numerical perturbations leading to errors in the range of between-tool
+% variability. Such high errors
+% might be triggered by updates in operating systems, Python, MATLAB, and
+% other software dependencies.
 % \yohan{The sentence is ok, just a picky point: the SciPy result you cited
 % describes the precision of the spline implementation while at the end
 % you're talking differences due to updates. The nuance is that two versions
@@ -650,10 +650,10 @@ group analyses maps between the results in~\cite{bowring2019exploring} and
 our replication. Numerical perturbations of 1 ulp are likely to have been
 introduced by our replication due to the use of GNU/Octave vs MATLAB for SPM
 and multithreading for AFNI.
- \camille{Would this be feasible to check?}
- \tristan{Ali, could you answer that?}
- \ali{Yes, all the output data are available in Beluga cluster in `~/projects/def-glatard/between-tool-samples/results/ds000001/'.
- These replicated results can find in particular in `tools/AFNI/replicated' for AFNI and `tools/SPM/Octave' for SPM results.}
+%  \camille{Would this be feasible to check?}
+%  \tristan{Ali, could you answer that?}
+%  \ali{Yes, all the output data are available in Beluga cluster in `~/projects/def-glatard/between-tool-samples/results/ds000001/'.
+%  These replicated results can find in particular in `tools/AFNI/replicated' for AFNI and `tools/SPM/Octave' for SPM results.}
   However, the group maps remained very similar
 overall, which led us to conclude that our results correctly reproduced
 the ones in~\cite{bowring2019exploring}.
