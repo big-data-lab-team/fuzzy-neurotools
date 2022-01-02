@@ -322,15 +322,15 @@ times using Fuzzy Libmath with a virtual precision of $t=53$~bits for
 double-precision values and $t=24$~bits for single-precision values. These
 values were chosen such that the numerical perturbation simulates machine
 error. The resulting samples are equally plausible estimates of
-the true
+the true numerical result at the precision used by the pipelines. 
 % \yohan{How can you assert that when you don't have ground truth? Would it be more safe to say "plausible estimates numerical solutions"?}
 % \tristan{This does not refer to the ground truth but to the true \emph{numerical} result}
-numerical result at the precision used by the pipelines. Moreover, to evaluate numerical perturbations at different magnitudes,
-we repeated the FSL analyses for virtual
-precisions ranging from $t=1$~bit to $t=24$~bits for single-precision
-and double-precision values. We also repeated the FSL analyses for virtual
-precisions ranging from $t=24$~bits to $t=53$~bits for double-precision values, having
-set the virtual precision to $t=24$~bits for single-precision values.
+% Moreover, to evaluate numerical perturbations at different magnitudes,
+% we repeated the FSL analyses for virtual
+% precisions ranging from $t=1$~bit to $t=24$~bits for single-precision
+% and double-precision values. We also repeated the FSL analyses for virtual
+% precisions ranging from $t=24$~bits to $t=53$~bits for double-precision values, having
+% set the virtual precision to $t=24$~bits for single-precision values.
 
 We evaluated BT for thresholded as well as unthresholded
 group-level and subject-level t-statistics maps by computing the absolute
