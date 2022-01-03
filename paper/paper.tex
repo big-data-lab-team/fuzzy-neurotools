@@ -129,7 +129,7 @@ CCS~\cite{xu2015connectome}, CPAC~\cite{craddock2013towards}, DPARSF~\cite{yan20
 fMRIPrep~\cite{esteban2019fmriprep}) and identified the main
 factors contributing to these differences. The magnitude of the highlighted
 differences suggest that between-tool software variability may be playing a critical
-role in the reproducibility of fMRI analysis overall. 
+role in the reproducibility of \camille{add ``an'' ?} fMRI analysis overall. 
 
 The variability resulting from differences in lower-level software
 libraries (within-tool software variability) has also been quantified in fMRI. The
@@ -220,7 +220,7 @@ pipeline.
     {}                     & {Second-level Inference}           & \checkmark & \checkmark & \checkmark \\
     \hline
   \end{tabular}
-  \caption{Software processing steps (adapted from~\cite{bowring2019exploring}).}
+  \caption{Software processing steps (adapted from~\cite{bowring2019exploring}). \camille{``Analysis Voxel Size'' is not a processing step per se but more a parametrization of inter-subject registration so maybe it should be removed? // Not sure if this is worth noting but in FSL ``Inter-subject registration'' happens after the first-level analysis}}
   \label{table:pipeline-steps}
 \end{table}
 
@@ -296,7 +296,7 @@ We measured between-tool software variability (BT) by running the pipelines
 described in~\cite{bowring2019exploring} with FSL version 5.0.10, AFNI
 version 18.1.09, and SPM12 version r7771 executed with GNU/Octave version
 5.2. These software versions were identical to the ones used 
-in~\cite{bowring2019exploring} except for SPM for which we used GNU/Octave
+in~\cite{bowring2019exploring} except for SPM for which we \camille{add ``had to use a more recent version in order to be able to use it with''} GNU/Octave
 instead of MATLAB to enable mathematical function instrumentation using
 Fuzzy Libmath. Indeed, MATLAB uses its own built-in mathematical functions,
 which prevents the use of Fuzzy Libmath. In AFNI, we set the number of
@@ -321,7 +321,7 @@ We simulated within-tool software variability (WT) by running the same analyses 
 times using Fuzzy Libmath with a virtual precision of $t=53$~bits for
 double-precision values and $t=24$~bits for single-precision values. These
 values were chosen such that the numerical perturbation simulates machine
-error. The resulting samples are equally plausible estimates of
+error \camille{Given the target journal where any readers (like myself :) ) won't be expert in nuemrical perturbations, I think that you could add a bit more details here on why those numbers are good to simulate machine errors}. The resulting samples are equally plausible estimates of
 the true numerical result at the precision used by the pipelines. 
 % \yohan{How can you assert that when you don't have ground truth? Would it be more safe to say "plausible estimates numerical solutions"?}
 % \tristan{This does not refer to the ground truth but to the true \emph{numerical} result}
