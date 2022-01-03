@@ -371,7 +371,7 @@ correctly skull-stripped and registered to the MNI template.
 \subsection{In the group analysis, BT was larger than WT}
 
 Table~\ref{table:pipeline-stats} presents summary statistics for variability in the
-group-level t-statistics. For each tool pair (A, B), BT was
+group-level t-statistics. For each tool pair (A, B), BT \camille{could we restate which metric we are looking at here -- as it stands BT means between-tool but coul represent many different metrics? It is ``absolute difference BT''?} was
 significantly larger than machine error in tool A or B, in both thresholded
 and unthresholded maps (Wilcoxon signed-rank test and t-test p~\textless~$10^{-5}$ for all tests).
 % \gk{we don't have sufficient sample size to say that p is that small,
@@ -410,7 +410,7 @@ in [0.60, 0.62], p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps}-\textbf{C}).
     \bottomrule
   \end{tabular}
   \caption{Voxel-wise mean and standard deviation of BT and WT variability
-    in t-statistics maps.}
+    in t-statistics maps \camille{here and in other places -- is it t-statistic maps? (i.e. without s after statistic)}.}
   \label{table:pipeline-stats}
 \end{table}
 
@@ -433,7 +433,7 @@ in [0.60, 0.62], p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps}-\textbf{C}).
 \subsection{In subject analyses, WT approached BT for some subjects}
 
 Table~\ref{table:pipeline-stats} also presents summary statistics for
-subject-level unthresholded t-statistics maps. As for group-level maps,
+subject-level unthresholded t-statistics maps \camille{Is this for one subject in particular ? If so how was it chosen ?Or a mean over all subjects?}. As for group-level maps,
 BT was consistently larger than WT (Wilcoxon
 signed-rank test and t-test p~\textless~$10^{-5}$ for all tests).
 However, for
@@ -673,7 +673,7 @@ the ones in~\cite{bowring2019exploring}.
 \label{sec:supp-subjects}
 
 Figure~\ref{fig:unthresh-correlation-allsbj} plots the relationship between
-WT and BT for each subject, showing a consistent moderate correlation between BT and
+WT and BT for each subject \camille{across voxels?}, showing a consistent moderate correlation between BT and
 WT.
 
 \begin{figure*}[ht]
@@ -697,7 +697,7 @@ for each run of tools for the subject with highest WT variability.
   % \includegraphics[width=.6\textwidth]{figures/sbj-abs-corr-unthresh-plot.png}
   \caption{For subject with highest WT variability, unthresholded subject-level t-statistics
   within tools at machine error for FSL (\textbf{A}),
-  SPM (\textbf{B}), AFNI (\textbf{C}).}
+  SPM (\textbf{B}), AFNI (\textbf{C}). \camille{If I understand correctly the point you are making here is that WT(AFNI) at some voxels is close to AFNI-SPM ? What is surprising here for me is that WT(AFNI) seems to be quite different from WT(SPM) and WT(FSL). Do we have a good idea why? Maybe looking at the maps would help?} }
   \label{fig:unthresh-worst-sbj}
 \end{figure*}
 
