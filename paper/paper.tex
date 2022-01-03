@@ -360,10 +360,10 @@ in our GitHub repository at
 We verified the correctness of our analyses by comparing our unperturbed
 t-statistic group maps with the ones obtained
 in~\cite{bowring2019exploring}. For FSL, we found
-identical results. For SPM, the files (as measured by checksums) were different but differences
+identical results \camille{It would be nice here to be more specific about how you checked that they were identical -- using a sha sum ? And maybe even insisting by using ``striclty identifical''. I think for different people in the community ``identical'' can mean different things}. For SPM, the files (as measured by checksums) were different but differences
 were visually unnoticeable. For AFNI, the activation maps were similar
 overall, however, differences were noticeable visually.
-The observed differences remained small (see Supplemental Material~\ref{sec:supp-repro}), and might be due to the use of
+The observed differences remained small \camille{maybe also add ``and the overall patterns of activations were preseved''} (see Supplemental Material~\ref{sec:supp-repro}), and might be due to the use of
 GNU/Octave vs MATLAB in SPM, and of multithreading in AFNI. We performed visual quality control of the AFNI
 and SPM results for each individual subject and confirmed that T1-weighted images were
 correctly skull-stripped and registered to the MNI template.
