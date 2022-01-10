@@ -129,7 +129,7 @@ CCS~\cite{xu2015connectome}, CPAC~\cite{craddock2013towards}, DPARSF~\cite{yan20
 fMRIPrep~\cite{esteban2019fmriprep}) and identified the main
 factors contributing to these differences. The magnitude of the highlighted
 differences suggest that between-tool software variability may be playing a critical
-role in the reproducibility of \camille{add ``an'' ?} fMRI analysis overall. 
+role in the reproducibility of an fMRI analysis overall. 
 
 The variability resulting from differences in lower-level software
 libraries (within-tool software variability) has also been quantified in fMRI. The
@@ -206,7 +206,7 @@ pipeline.
     {}                     & {Brain Extraction (Functional)}    &            & \checkmark &            \\
     {}                     & {Intra-subject Coregistration}     & \checkmark & \checkmark & \checkmark \\
     {}                     & {Inter-subject Registration}       & \checkmark & \checkmark & \checkmark \\
-    {}                     & {Analysis Voxel Size}              & \checkmark & \checkmark & \checkmark \\
+    % {}                     & {Analysis Voxel Size}              & \checkmark & \checkmark & \checkmark \\
     {}                     & {Smoothing}                        & \checkmark & \checkmark & \checkmark \\
     \hline
     {First-level}          & {Model Specification}              & \checkmark & \checkmark & \checkmark \\
@@ -220,7 +220,8 @@ pipeline.
     {}                     & {Second-level Inference}           & \checkmark & \checkmark & \checkmark \\
     \hline
   \end{tabular}
-  \caption{Software processing steps (adapted from~\cite{bowring2019exploring}). \camille{``Analysis Voxel Size'' is not a processing step per se but more a parametrization of inter-subject registration so maybe it should be removed? // Not sure if this is worth noting but in FSL ``Inter-subject registration'' happens after the first-level analysis}}
+  \caption{Software processing steps (adapted from~\cite{bowring2019exploring}).}
+  % \camille{``Analysis Voxel Size'' is not a processing step per se but more a parametrization of inter-subject registration so maybe it should be removed? // Not sure if this is worth noting but in FSL ``Inter-subject registration'' happens after the first-level analysis}}
   \label{table:pipeline-steps}
 \end{table}
 
@@ -296,7 +297,8 @@ We measured between-tool software variability (BT) by running the pipelines
 described in~\cite{bowring2019exploring} with FSL version 5.0.10, AFNI
 version 18.1.09, and SPM12 version r7771 executed with GNU/Octave version
 5.2. These software versions were identical to the ones used 
-in~\cite{bowring2019exploring} except for SPM for which we \camille{add ``had to use a more recent version in order to be able to use it with''} GNU/Octave
+in~\cite{bowring2019exploring} except for SPM for which we had to use
+a more recent version in order to be able to use it with GNU/Octave
 instead of MATLAB to enable mathematical function instrumentation using
 Fuzzy Libmath. Indeed, MATLAB uses its own built-in mathematical functions,
 which prevents the use of Fuzzy Libmath. In AFNI, we set the number of
@@ -321,7 +323,9 @@ We simulated within-tool software variability (WT) by running the same analyses 
 times using Fuzzy Libmath with a virtual precision of $t=53$~bits for
 double-precision values and $t=24$~bits for single-precision values. These
 values were chosen such that the numerical perturbation simulates machine
-error \camille{Given the target journal where any readers (like myself :) ) won't be expert in nuemrical perturbations, I think that you could add a bit more details here on why those numbers are good to simulate machine errors}. The resulting samples are equally plausible estimates of
+error, an upper bound on the relative error between a real number and its floating-point representation.
+% \camille{Given the target journal where any readers (like myself :) ) won't be expert in nuemrical perturbations, I think that you could add a bit more details here on why those numbers are good to simulate machine errors}.
+The resulting samples are equally plausible estimates of
 the true numerical result at the precision used by the pipelines. 
 % \yohan{How can you assert that when you don't have ground truth? Would it be more safe to say "plausible estimates numerical solutions"?}
 % \tristan{This does not refer to the ground truth but to the true \emph{numerical} result}
@@ -350,20 +354,18 @@ samples.
 % \tristan{A voxel is activated if its value (t-stat) is above a threshold}
 
 \section{Results}
-The scripts, Docker images, and data \camille{maybe a detail but consider using something like ``and derived datasets that were used to reproduce the results'' ? As it is now, it made me wonder whether the whole nifti dataset was in the github repo} to reproduce the results are available
-in our GitHub repository at
-\url{https://github.com/big-data-lab-team/fuzzy-neurotools}.
-
+The scripts, Docker images, and derived datasets that were used to reproduce the results are available
+in our GitHub repository at \url{https://github.com/big-data-lab-team/fuzzy-neurotools}.
 
 \subsection{Validation of replication}
 
 We verified the correctness of our analyses by comparing our unperturbed
 t-statistic group maps with the ones obtained
 in~\cite{bowring2019exploring}. For FSL, we found
-identical results \camille{It would be nice here to be more specific about how you checked that they were identical -- using a sha sum ? And maybe even insisting by using ``striclty identifical''. I think for different people in the community ``identical'' can mean different things}. For SPM, the files (as measured by checksums) were different but differences
-were visually unnoticeable. For AFNI, the activation maps were similar
-overall, however, differences were noticeable visually.
-The observed differences remained small \camille{maybe also add ``and the overall patterns of activations were preseved''} (see Supplemental Material~\ref{sec:supp-repro}), and might be due to the use of
+identical results with the same checksums. For SPM, the files (as measured by checksums) were different but differences
+were visually unnoticeable. For AFNI, the overall patterns of activations were preseved
+, however, differences were noticeable visually.
+The observed differences remained small (see Supplemental Material~\ref{sec:supp-repro}), and might be due to the use of
 GNU/Octave vs MATLAB in SPM, and of multithreading in AFNI. We performed visual quality control of the AFNI
 and SPM results for each individual subject and confirmed that T1-weighted images were
 correctly skull-stripped and registered to the MNI template.
@@ -371,7 +373,7 @@ correctly skull-stripped and registered to the MNI template.
 \subsection{In the group analysis, BT was larger than WT}
 
 Table~\ref{table:pipeline-stats} presents summary statistics for variability in the
-group-level t-statistics. For each tool pair (A, B), BT \camille{could we restate which metric we are looking at here -- as it stands BT means between-tool but coul represent many different metrics? It is ``absolute difference BT''?} was
+group-level t-statistic. For each tool pair (A, B), absolute difference BT was
 significantly larger than machine error in tool A or B, in both thresholded
 and unthresholded maps (Wilcoxon signed-rank test and t-test p~\textless~$10^{-5}$ for all tests).
 % \gk{we don't have sufficient sample size to say that p is that small,
@@ -410,7 +412,7 @@ in [0.60, 0.62], p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps}-\textbf{C}).
     \bottomrule
   \end{tabular}
   \caption{Voxel-wise mean and standard deviation of BT and WT variability
-    in t-statistics maps \camille{here and in other places -- is it t-statistic maps? (i.e. without s after statistic)}.}
+    in t-statistic maps.}
   \label{table:pipeline-stats}
 \end{table}
 
@@ -433,8 +435,8 @@ in [0.60, 0.62], p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps}-\textbf{C}).
 \subsection{In subject analyses, WT approached BT for some subjects}
 
 Table~\ref{table:pipeline-stats} also presents summary statistics for
-subject-level unthresholded t-statistics maps \camille{Is this for one subject in particular ? If so how was it chosen ?Or a mean over all subjects?}. As for group-level maps,
-BT was consistently larger than WT (Wilcoxon
+subject-level unthresholded t-statistic maps computed by the mean across all subjects.
+As for group-level maps, BT was consistently larger than WT (Wilcoxon
 signed-rank test and t-test p~\textless~$10^{-5}$ for all tests).
 However, for
 some subjects and for AFNI, WT approached 
@@ -527,7 +529,7 @@ unthresholded maps.
   \end{subfigure}
   \centering
   \caption{\textbf{A},\textbf{B},\textbf{C}: Thresholded group-level
-    t-statistics within tools at machine error for FSL (\textbf{A}), SPM
+    t-statistic within tools at machine error for FSL (\textbf{A}), SPM
     (\textbf{B}) and AFNI (\textbf{C}). Arrows point to activation clusters
     impacted by both within- and between-tool variability.
      \textbf{D}: Confusion matrices of
@@ -662,7 +664,7 @@ the ones in~\cite{bowring2019exploring}.
   % \centering
   \includegraphics[width=\textwidth]{figures/replication-diffs.png}
   \caption{Differences between reproduced and original results obtained in~\cite{bowring2019exploring}
-    of unthresholded group-level t-statistics for SPM (left) and AFNI
+    of unthresholded group-level t-statistic for SPM (left) and AFNI
     (right). The highest areas of difference in AFNI seem to be due to
     differences in brain masks.}
   \label{fig:replication-diff}
@@ -673,7 +675,7 @@ the ones in~\cite{bowring2019exploring}.
 \label{sec:supp-subjects}
 
 Figure~\ref{fig:unthresh-correlation-allsbj} plots the relationship between
-WT and BT for each subject \camille{across voxels?}, showing a consistent moderate correlation between BT and
+WT and BT for each subject across voxels, showing a consistent moderate correlation between BT and
 WT.
 
 \begin{figure*}[ht]
@@ -684,10 +686,10 @@ WT.
   \label{fig:unthresh-correlation-allsbj}
 \end{figure*}
 
-\section{Maps of t-statistics for subject with highest WT variability}
+\section{Maps of t-statistic for subject with highest WT variability}
 \label{sec:supp-worst-subject}
 
-Figure~\ref{fig:unthresh-worst-sbj} plots the maps of t-statistics
+Figure~\ref{fig:unthresh-worst-sbj} plots the maps of t-statistic
 for each run of tools for the subject with highest WT variability.
 
 \begin{figure*}[ht]
@@ -695,7 +697,7 @@ for each run of tools for the subject with highest WT variability.
   \includegraphics[width=\textwidth]{figures/5-marked.pdf}
   % \includegraphics[width=\textwidth]{figures/plots/wt-tstats/5-framed.png}
   % \includegraphics[width=.6\textwidth]{figures/sbj-abs-corr-unthresh-plot.png}
-  \caption{For subject with highest WT variability, unthresholded subject-level t-statistics
+  \caption{For subject with highest WT variability, unthresholded subject-level t-statistic
   within tools at machine error for FSL (\textbf{A}),
   SPM (\textbf{B}), AFNI (\textbf{C}). \camille{If I understand correctly the point you are making here is that WT(AFNI) at some voxels is close to AFNI-SPM ? What is surprising here for me is that WT(AFNI) seems to be quite different from WT(SPM) and WT(FSL). Do we have a good idea why? Maybe looking at the maps would help?} }
   \label{fig:unthresh-worst-sbj}
