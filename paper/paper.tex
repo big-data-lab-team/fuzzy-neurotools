@@ -52,10 +52,10 @@
 
 \title{Comparing software variability across and within fMRI analysis packages}
 
-\author{Ali Salari$^1$, Yohan Chatelain$^1$, Alexander Bowring$^2$, Camille Maumet$^3$, Gregory Kiar$^4$, Tristan Glatard$^1$\\
+\author{Ali Salari$^1$, Yohan Chatelain$^1$, Camille Maumet$^3$, Gregory Kiar$^4$, Tristan Glatard$^1$\\
   \vspace*{0.1cm}\\
   $^1$ Department of Computer-Science and Software Engineering, Concordia University, Montreal, Canada\\
-  $^2$ Li Ka Shing Centre for Health Information and Discovery, Nuffield Department of Population Health,\\ Big Data Institute, University of Oxford, Oxford, UK\\
+  % $^2$ Li Ka Shing Centre for Health Information and Discovery, Nuffield Department of Population Health,\\ Big Data Institute, University of Oxford, Oxford, UK\\
   $^3$ Inria, Univ Rennes, CNRS, Inserm, IRISA UMR 6074, Empenn ERL U 1228, Rennes, France\\
   $^4$ Center for the Developing Brain, Child Mind Institute, New York, NY, USA}
 
@@ -324,11 +324,17 @@ we encapsulated the
 above-mentioned software packages in Docker container images based on CentOS 7.3
 which we converted to Singularity images to enable running on cluster nodes.
 
+
+A floating-point number can be represented by a finite number of precision bits, 24 bits
+for single-precision and 53 bits for double-precision in the IEEE-754 standard.
+Thus, the machine error, the smallest difference between two floating-point numbers that the computer
+can recognize, for single-precision is $2^{-24}$ and double-precision is $2^{-53}$.
+We simulated the machine error by instrumenting the last precision bits of the floating-point numbers.
 We simulated within-tool software variability (WT) by running the same analyses three
 times using Fuzzy Libmath with a virtual precision of $t=53$~bits for
-double-precision values and $t=24$~bits for single-precision values. These
-values were chosen such that the numerical perturbation simulates machine
-error, an upper bound on the relative error between a real number and its floating-point representation.
+double-precision values and $t=24$~bits for single-precision values. 
+These values were chosen such that the numerical perturbation simulates machine error.
+%an upper bound on the relative error between a real number and its floating-point representation.
 % \camille{Given the target journal where any readers (like myself :) ) won't be expert in nuemrical perturbations, I think that you could add a bit more details here on why those numbers are good to simulate machine errors}.
 The resulting samples are equally plausible estimates of
 the true numerical result at the precision used by the pipelines. 
@@ -367,7 +373,7 @@ in our GitHub repository at \url{https://github.com/big-data-lab-team/fuzzy-neur
 We verified the correctness of our analyses by comparing our unperturbed
 t-statistic group maps with the ones obtained
 in~\cite{bowring2019exploring}. For FSL, we found
-identical results with the same checksums. For SPM, the files (as measured by checksums) were different but differences
+strictly identical results with the same MD5 checksums. For SPM, the files (as measured by checksums) were different but differences
 were visually unnoticeable. For AFNI, the overall patterns of activations were preseved
 , however, differences were noticeable visually.
 The observed differences remained small (see Supplemental Material~\ref{sec:supp-repro}), and might be due to the use of
@@ -704,7 +710,8 @@ for each run of tools for the subject with highest WT variability.
   % \includegraphics[width=.6\textwidth]{figures/sbj-abs-corr-unthresh-plot.png}
   \caption{For subject with highest WT variability, unthresholded subject-level t-statistic
   within tools at machine error for FSL (\textbf{A}),
-  SPM (\textbf{B}), AFNI (\textbf{C}). \camille{If I understand correctly the point you are making here is that WT(AFNI) at some voxels is close to AFNI-SPM ? What is surprising here for me is that WT(AFNI) seems to be quite different from WT(SPM) and WT(FSL). Do we have a good idea why? Maybe looking at the maps would help?} }
+  SPM (\textbf{B}), AFNI (\textbf{C}).}% \camille{If I understand correctly the point you are making here is that WT(AFNI) at some voxels is close to AFNI-SPM ? What is surprising here for me is that WT(AFNI) seems to be quite different from WT(SPM) and WT(FSL). Do we have a good idea why? Maybe looking at the maps would help?}
+  %\ali{We are pointing regions with instability in both WT and BT, and yes indeed it shows a very different WT(AFNI) compare to WT(FSL) and WT(SPM), but we did not investigate the reason of variabilities for now.} }
   \label{fig:unthresh-worst-sbj}
 \end{figure*}
 
