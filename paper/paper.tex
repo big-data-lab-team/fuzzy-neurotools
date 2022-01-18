@@ -61,20 +61,24 @@
 
 \maketitle
 \begin{abstract}
-  Variability has been broadly observed in functional MRI analyses as a result
-  of software differences
-  both between and within analytic tools. However, the
-  relationship between within-tool and between-tool software variabilities for a
-  given analysis is unclear \camille{early on in the abstract, I think that it would be worth specifying what within-tool covers in the context of this paper: i.e. a focus on variations that can be induced by low level libraries as seen for example when using different operating systems -- which is different from within-tool variability that could be induced when using different parameters (e.g smoothing 6mm or 8mm) or algorithms (e.g. FLIRT versus FNIRT in FSL) within the same software } . We extended a previous comparison of fMRI
-  analysis software libraries (namely FSL, AFNI, and SPM) and related the
-  observed differences to within-tool software variability
-  simulated using Monte-Carlo arithmetic. In group analyses, we found that
+  Variability has been broadly observed in functional MRI analyses as a
+  result of software differences both between and within analytic tools.
+  However, the relationship between within-tool and between-tool software
+  variabilities for a given analysis is unclear. Within-tool variability has multiple origins
+  including variations in algorithms, parametrizations, and
+  low-level software dependencies. We focus on the effects resulting from software dependencies --- 
+  in particular due to operating system and other infrastructural updates --- as they often remain unnoticed 
+  while algorithms and parametrizations are more controllable.
+ We extended
+  a previous comparison of fMRI analysis software libraries (namely FSL,
+  AFNI, and SPM) and related the observed differences to within-tool
+  software variability simulated using Monte-Carlo arithmetic. In group
+  analyses, we found that
   between-tool software variability was consistently larger than within-tool software
-  variability simulated at the magnitude of
-  machine error. In subject analyses, the same within-tool software variability
+  variability. In subject analyses, within-tool software variability
   approached between-tool software variability in some regions for some subjects.
   Interestingly, within- and between-tool software variabilities appeared moderately
-  correlated ($r > 0.5$) \camille{maybe add ``across voxels or across xxx'' so that we understand what the correlation is measuring a bit better?} in all tested conditions . 
+  correlated ($r > 0.5$ across voxels) in all tested conditions. 
   % Finally, we found that
   % within-tool software variability had effects of similar magnitude to between-tool
   % software variability when simulated from numerical perturbations introduced at the virtual
@@ -86,9 +90,10 @@
   %  \camille{It is not entirely clear to me how this relates to the previous
   %  conclusions that BT variability was consistently larger than machine
   %  error} \tristan{Better?}
-   Our findings motivate the
-  continued investigation of within-tool software variability in neuroimaging, and position it
-  as a possible proxy for studying some of the arbitrary between-tool software variations. \camille{should we add ``for subject-level analyses'' here? Since we said earlier that within-tool was consistently smaller than between tool variability for group studies.}
+  Our findings motivate the continued investigation of within-tool
+  software variability in neuroimaging, and position it as a possible proxy
+  for studying some of the arbitrary between-tool software variations for
+  subject-level analyses.
 \end{abstract}
 
 \section{Introduction}
@@ -435,7 +440,7 @@ in [0.60, 0.62], p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps}-\textbf{C}).
 \subsection{In subject analyses, WT approached BT for some subjects}
 
 Table~\ref{table:pipeline-stats} also presents summary statistics for
-subject-level unthresholded t-statistic maps computed by the mean across all subjects.
+subject-level unthresholded t-statistic maps (mean over subjects).
 As for group-level maps, BT was consistently larger than WT (Wilcoxon
 signed-rank test and t-test p~\textless~$10^{-5}$ for all tests).
 However, for
