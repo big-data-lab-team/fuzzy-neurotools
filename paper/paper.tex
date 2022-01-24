@@ -325,11 +325,12 @@ above-mentioned software packages in Docker container images based on CentOS 7.3
 which we converted to Singularity images to enable running on cluster nodes.
 
 
-A floating-point number can be represented by a finite number of precision bits, 24 bits
-for single-precision and 53 bits for double-precision in the IEEE-754 standard.
-Thus, the machine error, the smallest difference between two floating-point numbers that the computer
-can recognize, for single-precision is $2^{-24}$ and double-precision is $2^{-53}$.
-We simulated the machine error by instrumenting the last precision bits of the floating-point numbers.
+A floating-point number is represented by a finite number of bits, 24 bits
+for single-precision and 53 bits for double-precision in the IEEE-754 standard \tristan{This is the size of the mantissas, not the size of the entire representation}.
+Machine error, the smallest difference between two floating-point numbers that can be represented,
+is $2^{-24}$ in single-precision and $2^{-53}$ in double precision \tristan{The magnitude of machine error depends on the exponent}.
+We simulated machine error by instrumenting the last precision bits \tristan{We cannot ``instrument'' a bit, we can perturb it. Code is instrumented.}
+ of the floating-point numbers.
 We simulated within-tool software variability (WT) by running the same analyses three
 times using Fuzzy Libmath with a virtual precision of $t=53$~bits for
 double-precision values and $t=24$~bits for single-precision values. 
@@ -373,7 +374,7 @@ in our GitHub repository at \url{https://github.com/big-data-lab-team/fuzzy-neur
 We verified the correctness of our analyses by comparing our unperturbed
 t-statistic group maps with the ones obtained
 in~\cite{bowring2019exploring}. For FSL, we found
-strictly identical results with the same MD5 checksums. For SPM, the files (as measured by checksums) were different but differences
+strictly identical results with the same MD5 checksums. For SPM, the files (as measured by MD5 checksums) were different but differences
 were visually unnoticeable. For AFNI, the overall patterns of activations were preseved
 , however, differences were noticeable visually.
 The observed differences remained small (see Supplemental Material~\ref{sec:supp-repro}), and might be due to the use of
