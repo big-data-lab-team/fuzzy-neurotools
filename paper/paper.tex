@@ -338,7 +338,7 @@ Machine error, the smallest absolute difference between two
 floating-point numbers that can be represented, is in general $2^{-24}\times e$ in
 single precision and $2^{-53}\times e$ in double precision.
 We simulated machine error by introducing the random perturbation defined
-in Equation~\ref{eq} at the virtual precision of $t=24$~bits for single-precision 
+in Equation~\ref{eq:mca_inexact} at the virtual precision of $t=24$~bits for single-precision 
 values and $t=53$~bits for double-precision ones. The perturbed pseudo-mantissa
 is obtained by extending the size of the original pseudo-mantissa, applying the perturbation 
 at the desired virtual precision, and rounding the perturbed result
