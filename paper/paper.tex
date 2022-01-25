@@ -325,12 +325,24 @@ above-mentioned software packages in Docker container images based on CentOS 7.3
 which we converted to Singularity images to enable running on cluster nodes.
 
 
-A floating-point number is represented by a finite number of bits, 24 bits
-for single-precision and 53 bits for double-precision in the IEEE-754 standard \tristan{This is the size of the mantissas, not the size of the entire representation}.
-Machine error, the smallest difference between two floating-point numbers that can be represented,
-is $2^{-24}$ in single-precision and $2^{-53}$ in double precision \tristan{The magnitude of machine error depends on the exponent}.
-We simulated machine error by instrumenting the last precision bits \tristan{We cannot ``instrument'' a bit, we can perturb it. Code is instrumented.}
- of the floating-point numbers.
+In the IEEE-754 format, a floating-point number $N$ is represented by a sign
+bit (s), an exponent (e), and a pseudo-mantissa (m) as:
+
+\begin{equation}
+  N = (-1)^s \times 2^E \times (1.m),
+\end{equation}
+where $E=e-127$ for single precision and $E=e-1023$ for double precision.
+In single precision, the pseudo-mantissa has 23 bits and the exponent has 8 bits, whereas in 
+double precision the pseudo-mantissa has 52 bits and the exponent has 11 bits. 
+Machine error, the smallest absolute difference between two
+floating-point numbers that can be represented, is in general $2^{-24}\times e$ in
+single precision and $2^{-53}\times e$ in double precision.
+We simulated machine error by introducing the random perturbation defined
+in Equation~\ref{eq} at the virtual precision of $t=24$~bits for single-precision 
+values and $t=53$~bits for double-precision ones. The perturbed pseudo-mantissa
+is obtained by extending the size of the original pseudo-mantissa, applying the perturbation 
+at the desired virtual precision, and rounding the perturbed result
+ back to the original precision.  
 We simulated within-tool software variability (WT) by running the same analyses three
 times using Fuzzy Libmath with a virtual precision of $t=53$~bits for
 double-precision values and $t=24$~bits for single-precision values. 
