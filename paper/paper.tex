@@ -332,39 +332,32 @@ bit (s), an exponent (e), and a pseudo-mantissa (m) as:
   N = (-1)^s \times 2^E \times (1.m),
 \end{equation}
 where $E=e-127$ for single precision and $E=e-1023$ for double precision.
-In single precision, the pseudo-mantissa has 23 bits and the exponent has 8 bits, whereas in 
-double precision the pseudo-mantissa has 52 bits and the exponent has 11 bits. 
+In single precision, the pseudo-mantissa has 23 bits and the exponent has 8 bits, whereas in
+double precision the pseudo-mantissa has 52 bits and the exponent has 11 bits.
 Machine error, the smallest absolute difference between two
 floating-point numbers that can be represented, is in general $2^{-24}\times e$ in
 single precision and $2^{-53}\times e$ in double precision.
 We simulated machine error by introducing the random perturbation defined
-in Equation~\ref{eq:mca_inexact} at the virtual precision of $t=24$~bits for single-precision 
+in Equation~\ref{eq:mca_inexact} at the virtual precision of $t=24$~bits for single-precision
 values and $t=53$~bits for double-precision ones. The perturbed pseudo-mantissa
-is obtained by extending the size of the original pseudo-mantissa, applying the perturbation 
-at the desired virtual precision, and rounding the perturbed result
- back to the original precision.  
+is obtained by extending the size of the original pseudo-mantissa, applying the perturbation
+at the desired virtual precision, and rounding the perturbed result back to the original precision.
 We simulated within-tool software variability (WT) by running the same analyses three
 times using Fuzzy Libmath with a virtual precision of $t=53$~bits for
 double-precision values and $t=24$~bits for single-precision values. 
-These values were chosen such that the numerical perturbation simulates machine error.
-%an upper bound on the relative error between a real number and its floating-point representation.
-% \camille{Given the target journal where any readers (like myself :) ) won't be expert in nuemrical perturbations, I think that you could add a bit more details here on why those numbers are good to simulate machine errors}.
+Perturbations were applied at the same magnitude of floating-point precisions during the pipeline execution
+regardless of what it corresponds to.
+These values were chosen such that the numerical perturbation affects all the pipeline steps and simulates
+machine error originating from software, hardware, and operating system changes.
 The resulting samples are equally plausible estimates of
 the true numerical result at the precision used by the pipelines. 
-% \yohan{How can you assert that when you don't have ground truth? Would it be more safe to say "plausible estimates numerical solutions"?}
-% \tristan{This does not refer to the ground truth but to the true \emph{numerical} result}
-% Moreover, to evaluate numerical perturbations at different magnitudes,
-% we repeated the FSL analyses for virtual
-% precisions ranging from $t=1$~bit to $t=24$~bits for single-precision
-% and double-precision values. We also repeated the FSL analyses for virtual
-% precisions ranging from $t=24$~bits to $t=53$~bits for double-precision values, having
-% set the virtual precision to $t=24$~bits for single-precision values.
 
 We evaluated BT for thresholded as well as unthresholded
-group-level and subject-level t-statistic maps by computing the absolute
+group-level and subject-level t-statistic maps by computing the
 differences of t-statistic maps across tools. For WT, we computed the
-average absolute difference across the three Fuzzy Libmath samples.
-Moreover, we computed WT variability for a pair of tools as the sum of WT values for each tool.
+average difference across the three Fuzzy Libmath samples.
+Moreover, we computed WT variability for a pair of tools as the sum of WT absolute differences for each tool.
+All differences were computed over the intersection of t-statistic maps between the pair of tools.
 
 Further, from the thresholded maps, we determined regional instability
 between activation clusters in the 360 regions in the Human Connectome
@@ -397,18 +390,19 @@ correctly skull-stripped and registered to the MNI template.
 \subsection{In the group analysis, BT was larger than WT}
 
 Table~\ref{table:pipeline-stats} presents summary statistics for variability in the
-group-level t-statistic. For each tool pair (A, B), absolute difference BT was
-significantly larger than machine error in tool A or B, in both thresholded
-and unthresholded maps (Wilcoxon signed-rank test and t-test p~\textless~$10^{-5}$ for all tests).
-% \gk{we don't have sufficient sample size to say that p is that small,
-% so we should probably say less than $10^{-5}$ or something else we could actually
-% arrive at with our number of repetitions, pipeline pairs, and samples.}
-% for all tests, t-test p=0 \gk{similar comment re p value} for all tests) \camille{p is smaller than a very small p but not zero?}.
+group-level t-statistic. 
+Mean of differences in t-statistic maps is generally centered around zero for BT and WT
+(one-sample t-test p~\textless~$10^{-4}$ for all tests).
+However, for each tool pair (A, B), BT variability was
+significantly larger than machine error in tool A or B,
+with an order of magnitude larger standard deviation of differences 
+in both thresholded and unthresholded maps, 
+(Wilcoxon signed-rank test and t-test p~\textless~$10^{-4}$ for all tests).
 These global differences were confirmed by Bland-Altman plots showing a
 clear dominance of BT over WT
 (Figure~\ref{fig:unthresh-maps}-\textbf{A},\textbf{B}).
 In addition, BT and WT appeared moderately correlated across voxels (Pearson's r
-in [0.60, 0.62], p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps}-\textbf{C}). 
+in [0.68, 0.69], p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps}-\textbf{C}). 
 % Interestingly, the correlation appears driven by a set of voxels exhibiting comparable BT and
 % WT values located around the identity line in Figure~\ref{fig:unthresh-maps}D, which, however, did not seem to have
 % any spatial consistency.
@@ -425,20 +419,20 @@ in [0.60, 0.62], p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps}-\textbf{C}).
     {}                & {}           & $\mu$                           & $\sigma$                           & $\mu$                             & $\sigma$ & $\mu$ & $\sigma$ \\
     \midrule
     \rowcolor{lightgray!50}
-    {Between Tools}   & FSL vs. SPM  & 2.564                           & 1.050                              & 0.887                             & 0.689    & 0.733 & 0.586    \\
+    {Between Tools}   & FSL vs. SPM  & -0.668                           & 1.056                              & -0.033                             & 1.121    & 0.068 & 0.937    \\
     \rowcolor{lightgray!50}
-    {(BT)}            & FSL vs. AFNI & 3.096                           & 1.232                              & 1.095                             & 0.882    & 0.878 & 0.704    \\
+    {(BT)}            & FSL vs. AFNI & -0.823                           & 1.857                              & 0.048                             & 1.439    & 0.034 & 1.146    \\
     \rowcolor{lightgray!50}
-    {}                & AFNI vs. SPM & 2.951                           & 1.344                              & 1.218                             & 0.955    & 0.983 & 0.762    \\
-    {Within Tool}     & FSL          & 0.510                           & 0.697                              & 0.127                             & 0.098    & 0.120 & 0.083    \\
-    {(WT)}            & SPM          & 0.367                           & 0.638                              & 0.085                             & 0.068    & 0.075 & 0.056    \\
-    {}                & AFNI         & 0.637                           & 0.747                              & 0.199                             & 0.202    & 0.167 & 0.197    \\
+    {}                & AFNI vs. SPM & 0.645                           & 1.428                              & 0.064                             & 1.489    & -0.065 & 1.206    \\
+    {Within Tool}     & FSL          & -0.003                           & 0.069                              & -0.010                             & 0.103    & -0.002 & 0.099    \\
+    {(WT)}            & SPM          & 0.001                           & 0.097                              & 0.000                             & 0.076    & 0.000 & 0.064    \\
+    {}                & AFNI         & 0.002                           & 0.228                              & -0.001                             & 0.178    & 0.000 & 0.178    \\
     \bottomrule
   \end{tabular}
-  \caption{Voxel-wise mean and standard deviation of BT and WT variability
-    in t-statistic maps.}
+  \caption{Voxel-wise mean and standard deviation of BT and WT variability in t-statistic maps.}
   \label{table:pipeline-stats}
 \end{table}
+
 
 \begin{figure*}[ht]
   \centering
@@ -461,17 +455,16 @@ in [0.60, 0.62], p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps}-\textbf{C}).
 Table~\ref{table:pipeline-stats} also presents summary statistics for
 subject-level unthresholded t-statistic maps (mean over subjects).
 As for group-level maps, BT was consistently larger than WT (Wilcoxon
-signed-rank test and t-test p~\textless~$10^{-5}$ for all tests).
-However, for
-some subjects and for AFNI, WT approached 
+signed-rank test and t-test p~\textless~$10^{-4}$ for 12 subjects).
+However, for some subjects and for AFNI, WT approached 
 BT in some regions (Figure~\ref{fig:unthresh-maps-sbj}). As for the group maps, BT and WT
- appeared moderately correlated for all subjects (r in [0.484,
-    0.633], p$< 10^{-5}$ for all subjects, see Supplemental Material~\ref{sec:supp-subjects} and~\ref{sec:supp-worst-subject}).
+ appeared moderately correlated for all subjects (r in [0.52,
+    0.69], p$< 10^{-5}$ for all subjects, see Supplemental Material~\ref{sec:supp-subjects} and~\ref{sec:supp-worst-subject}).
 
 %%%%%%%%%% Var. of Unthresh sbj05%%%%%%%%
 \begin{figure*}[ht]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/plots/Bland-Altman/unthresh-sbj05.png}
+  \includegraphics[width=0.9\textwidth]{figures/plots/Bland-Altman/unthresh-sbj10.png}
   % \includegraphics[width=0.9\textwidth]{figures/abs/sbj05-abs.png}
   %\caption{Standard deviation of thresholded t-statistics map on template surface}
   \caption{For subject with highest WT variability,
@@ -585,6 +578,7 @@ impacted neuroscientific conclusions related to these regions.
 
 In subject-level analyses, within- and between-tool software variabilties can become
 of comparable magnitude for some subjects in some regions. This observation
+can be used as a proxy for data quality, and
 is particularly relevant to the development of fMRI-based biomarkers aiming
 at individualized phenotype predictions. Machine error may play
 a non-negligible role in such analyses, even when predictions combine
@@ -718,7 +712,7 @@ for each run of tools for the subject with highest WT variability.
 
 \begin{figure*}[ht]
   \centering
-  \includegraphics[width=\textwidth]{figures/5-marked.pdf}
+  \includegraphics[width=\textwidth]{figures/10-marked.pdf}
   % \includegraphics[width=\textwidth]{figures/plots/wt-tstats/5-framed.png}
   % \includegraphics[width=.6\textwidth]{figures/sbj-abs-corr-unthresh-plot.png}
   \caption{For subject with highest WT variability, unthresholded subject-level t-statistic
