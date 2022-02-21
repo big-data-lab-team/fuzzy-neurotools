@@ -324,7 +324,6 @@ we encapsulated the
 above-mentioned software packages in Docker container images based on CentOS 7.3
 which we converted to Singularity images to enable running on cluster nodes.
 
-
 In the IEEE-754 format, a floating-point number $N$ is represented by a sign
 bit (s), an exponent (e), and a pseudo-mantissa (m) as:
 
@@ -342,7 +341,7 @@ in Equation~\ref{eq:mca_inexact} at the virtual precision of $t=24$~bits for sin
 values and $t=53$~bits for double-precision ones. The perturbed pseudo-mantissa
 is obtained by extending the size of the original pseudo-mantissa, applying the perturbation
 at the desired virtual precision, and rounding the perturbed result back to the original precision.
-We simulated within-tool software variability (WT) by running the same analyses three
+We simulated within-tool software variability (WT) by running the same analyses 10
 times using Fuzzy Libmath with a virtual precision of $t=53$~bits for
 double-precision values and $t=24$~bits for single-precision values. 
 Perturbations were applied at the same magnitude of floating-point precisions during the pipeline execution
@@ -355,9 +354,9 @@ the true numerical result at the precision used by the pipelines.
 We evaluated BT for thresholded as well as unthresholded
 group-level and subject-level t-statistic maps by computing the
 differences of t-statistic maps across tools. For WT, we computed the
-average difference across the three Fuzzy Libmath samples.
-Moreover, we computed WT variability for a pair of tools as the sum of WT absolute differences for each tool.
-All differences were computed over the intersection of t-statistic maps between the pair of tools.
+average difference across the 10 Fuzzy Libmath samples.
+% Moreover, we computed WT variability for a pair of tools as the sum of WT absolute differences for each tool.
+% All differences were computed over the intersection of t-statistic maps between the pair of tools.
 
 Further, from the thresholded maps, we determined regional instability
 between activation clusters in the 360 regions in the Human Connectome
@@ -390,19 +389,19 @@ correctly skull-stripped and registered to the MNI template.
 \subsection{In the group analysis, BT was larger than WT}
 
 Table~\ref{table:pipeline-stats} presents summary statistics for variability in the
-group-level t-statistic. 
-Mean of differences in t-statistic maps is generally centered around zero for BT and WT
-(one-sample t-test p~\textless~$10^{-4}$ for all tests).
+group-level t-statistic.
+Mean of differences in t-statistic maps is centered around zero for BT and WT
+in both thresholded and unthresholded maps (t-test p~\textless~$10^{-5}$).
 However, for each tool pair (A, B), BT variability was
-significantly larger than machine error in tool A or B,
+significantly larger than WT in tool A or B,
 with an order of magnitude larger standard deviation of differences 
 in both thresholded and unthresholded maps, 
-(Wilcoxon signed-rank test and t-test p~\textless~$10^{-4}$ for all tests).
+(Wilcoxon signed-rank test and t-test p~\textless~$10^{-5}$).
 These global differences were confirmed by Bland-Altman plots showing a
 clear dominance of BT over WT
 (Figure~\ref{fig:unthresh-maps}-\textbf{A},\textbf{B}).
-In addition, BT and WT appeared moderately correlated across voxels (Pearson's r
-in [0.68, 0.69], p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps}-\textbf{C}). 
+In addition, results show that BT and WT were not correlated across voxels
+(Pearson's r $\approx 0$, p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps-corr}).
 % Interestingly, the correlation appears driven by a set of voxels exhibiting comparable BT and
 % WT values located around the identity line in Figure~\ref{fig:unthresh-maps}D, which, however, did not seem to have
 % any spatial consistency.
@@ -419,14 +418,14 @@ in [0.68, 0.69], p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps}-\textbf{C}).
     {}                & {}           & $\mu$                           & $\sigma$                           & $\mu$                             & $\sigma$ & $\mu$ & $\sigma$ \\
     \midrule
     \rowcolor{lightgray!50}
-    {Between Tools}   & FSL vs. SPM  & -0.668                           & 1.056                              & -0.033                             & 1.121    & 0.068 & 0.937    \\
+    {Between Tools}   & FSL vs. SPM  & -0.845                           & 2.639                              & -0.052                             & 1.122    & -0.059 & 0.911    \\
     \rowcolor{lightgray!50}
-    {(BT)}            & FSL vs. AFNI & -0.823                           & 1.857                              & 0.048                             & 1.439    & 0.034 & 1.146    \\
+    {(BT)}            & FSL vs. AFNI & -0.871                           & 3.216                              & 0.048                             & 1.405    & -0.027 & 1.097    \\
     \rowcolor{lightgray!50}
-    {}                & AFNI vs. SPM & 0.645                           & 1.428                              & 0.064                             & 1.489    & -0.065 & 1.206    \\
-    {Within Tool}     & FSL          & -0.003                           & 0.069                              & -0.010                             & 0.103    & -0.002 & 0.099    \\
-    {(WT)}            & SPM          & 0.001                           & 0.097                              & 0.000                             & 0.076    & 0.000 & 0.064    \\
-    {}                & AFNI         & 0.002                           & 0.228                              & -0.001                             & 0.178    & 0.000 & 0.178    \\
+    {}                & AFNI vs. SPM & 0.426                           & 3.214                              & -0.113                             & 1.543    & -0.104 & 1.208    \\
+    {Within Tool}     & FSL          & -0.009                           & 0.266                              & 0.012                             & 0.046    & 0.004 & 0.042    \\
+    {(WT)}            & SPM          & 0.000                           & 0.199                              & 0.000                             & 0.035    & 0.000 & 0.029    \\
+    {}                & AFNI         & -0.004                           & 0.273                              & 0.000                             & 0.084    & 0.000 & 0.075    \\
     \bottomrule
   \end{tabular}
   \caption{Voxel-wise mean and standard deviation of BT and WT variability in t-statistic maps.}
@@ -436,37 +435,36 @@ in [0.68, 0.69], p$< 10^{-5}$, Figure~\ref{fig:unthresh-maps}-\textbf{C}).
 
 \begin{figure*}[ht]
   \centering
-  % \fbox{\begin{minipage}{\dimexpr \textwidth-2\fboxsep-2\fboxrule}
-  \begin{subfigure}[ht]{.9\textwidth}
-    \centering
-    \includegraphics[width=.9\textwidth]{figures/gl-unthresh.png}
-    % \includegraphics[width=0.9\textwidth]{figures/abs/gl-unthresh.png}
-    %\caption{Standard deviation of thresholded t-statistics map on template surface}
-  \end{subfigure}
+    \includegraphics[width=.9\textwidth]{figures/plots/Bland-Altman/with-masking/unthresh-gl-frame.png}
   \caption{\textbf{A} and \textbf{B}: Bland-Altman plots comparing group-level differences computed between tools
-    (\textbf{A}) and within tools at machine error (\textbf{B}). \textbf{C}: voxel-wise comparison of absolute differences.}
+    (\textbf{A}) and within tools at machine error (\textbf{B}).}% \textbf{C}: voxel-wise comparison of absolute differences.}
   \label{fig:unthresh-maps}
-  % \end{minipage}}
 \end{figure*}
 
+\begin{figure*}[ht]
+  \centering
+  \includegraphics[width=.9\textwidth]{figures/rel-corr-unthresh-with-masking.png}
+  \caption{Voxel-wise comparison of group-level differences in BT and WT.}
+  \label{fig:unthresh-maps-corr}
+\end{figure*}
 
 \subsection{In subject analyses, WT approached BT for some subjects}
 
 Table~\ref{table:pipeline-stats} also presents summary statistics for
 subject-level unthresholded t-statistic maps (mean over subjects).
 As for group-level maps, BT was consistently larger than WT (Wilcoxon
-signed-rank test and t-test p~\textless~$10^{-4}$ for 12 subjects).
+signed-rank test and t-test p~\textless~$10^{-4}$ for 14 subjects).
 However, for some subjects and for AFNI, WT approached 
-BT in some regions (Figure~\ref{fig:unthresh-maps-sbj}). As for the group maps, BT and WT
- appeared moderately correlated for all subjects (r in [0.52,
-    0.69], p$< 10^{-5}$ for all subjects, see Supplemental Material~\ref{sec:supp-subjects} and~\ref{sec:supp-worst-subject}).
+BT in some regions (Figure~\ref{fig:unthresh-maps-sbj},
+and see Supplemental Material~\ref{sec:supp-worst-subject}).
+% As for the group maps, BT and WT
+% showed no correlation across voxels for all subjects
+% (r$\approx 0$, p$< 10^{-5}$ for all subjects, see Supplemental Material~\ref{sec:supp-subjects} and~\ref{sec:supp-worst-subject}).
 
 %%%%%%%%%% Var. of Unthresh sbj05%%%%%%%%
 \begin{figure*}[ht]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/plots/Bland-Altman/unthresh-sbj10.png}
-  % \includegraphics[width=0.9\textwidth]{figures/abs/sbj05-abs.png}
-  %\caption{Standard deviation of thresholded t-statistics map on template surface}
+  \includegraphics[width=0.9\textwidth]{figures/plots/Bland-Altman/with-masking/unthresh-sbj04.png}
   \caption{For subject with highest WT variability,
     unthresholded subject-level variability computed between tools (\textbf{A}), and within tools at machine error (\textbf{B}).}
     % and difference between them (\textbf{C}). \camille{If the changes are visible, I think that it would be useful to add the correspondant unthresholded maps for the reader to see where the differences are and what they "look like"}}
@@ -504,7 +502,6 @@ BT in some regions (Figure~\ref{fig:unthresh-maps-sbj}). As for the group maps, 
 %   \label{fig:gnp-mni}
 % \end{figure*}
 
-
 \subsection{Previous results were confirmed in thresholded group maps}
 
 We also compared BT and WT in thresholded maps since these maps are commonly used instead of unthresholded ones 
@@ -517,15 +514,15 @@ Moreover, to compare the effects of BT and WT on the detection of activated
 regions, we measured WT instability and BT instability in each region of
 the HCP-MMP1.0 parcellation. The confusion matrices in
 Figure~\ref{fig:thresh-maps}-\textbf{D} report these instabilities for the
-360 tested regions. The average ratio of unstable regions was 26\% for BT
-and 9.2\% for WT, which confirmed that BT was larger than
+360 tested regions. The average ratio of unstable regions was 26.2\% for BT
+and 20.6\% for WT, which confirmed that BT was larger than
 WT even in thresholded maps.
 
 Finally, we measured agreement between BT and WT from the confusion
 matrices since interpreting the correlation of thresholded maps is
 difficult due to the discontinuity introduced by thresholding. 
 The average Cohen's kappa score\footnote{$\kappa \leq 0$ denotes chance agreement, $-1 \leq \kappa \leq 1$}
-computed from the confusion matrices between WT instability and BT instability was $\kappa=0.17$, indicating
+computed from the confusion matrices between WT instability and BT instability was $\kappa=0.2$, indicating
 a moderate agreement between WT instability and BT instability consistent with the correlations observed in 
 unthresholded maps.
 
@@ -540,9 +537,6 @@ unthresholded maps.
   \begin{subfigure}[ht]{\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/act_deact-marked.pdf}
-    % \includegraphics[width=\textwidth]{figures/plots/wt-tstats/act_deact-framed.png}
-    % \includegraphics[width=\textwidth]{figures/abs/gl-thresh.png}
-    %\caption{Standard deviation of thresholded t-statistics map on template surface}
   \end{subfigure}
   \centering
   \caption{\textbf{A},\textbf{B},\textbf{C}: Thresholded group-level
@@ -551,8 +545,52 @@ unthresholded maps.
     impacted by both within- and between-tool variability.
      \textbf{D}: Confusion matrices of
     activation instability in BT and WT among the 360 regions of the
-    HCP-MMP1.0 parcellation.}
+    HCP-MMP1.0 parcellation.(with masking)}
   \label{fig:thresh-maps}
+\end{figure*}
+
+\subsection{Brain masking instability was triggered by WT and BT}
+
+While the previous results were obtained over the union of t-statistic maps between the pair of tools,
+we also computed results in the intersection of maps and found that the brain masking instability was
+triggered by both BT and WT.
+BT and WT variabilities were consistently smaller than ones with the fixed masks
+in both thresholded and unthresholded maps (see Table~\ref{table:pipeline-stats-fixed-mask}).
+The effect of masking was clearly appeared in BT by Bland-Altman plots showing that blob lines
+were removed after fixing masks (Figure~\ref{fig:unthresh-maps-mask}-\textbf{A},\textbf{B}).
+
+%%%%%%%%%% Summary of statstics %%%%%%%%
+\setlength{\tabcolsep}{5pt}
+\begin{table}[h]
+  \centering
+  \begin{tabular}{cccccc|cc}
+    \toprule
+                      &              & \multicolumn{4}{c|}{Group map}  & \multicolumn{2}{c}{Subject maps}                                                                     \\
+    \multirow{2}{*}{} & {}           & \multicolumn{2}{c}{Thresholded} & \multicolumn{2}{c|}{Unthresholded} & \multicolumn{2}{c}{Unthresholded}                               \\
+    % \cmidrule{3-8}
+    {}                & {}           & $\mu$                           & $\sigma$                           & $\mu$                             & $\sigma$ & $\mu$ & $\sigma$ \\
+    \midrule
+    \rowcolor{lightgray!50}
+    {Between Tools}   & FSL vs. SPM  & -0.668                           & 1.056                              & -0.033                             & 1.121    & -0.068 & 0.937    \\
+    \rowcolor{lightgray!50}
+    {(BT)}            & FSL vs. AFNI & -0.823                           & 1.857                              & 0.048                             & 1.439    & 0.034 & 1.146    \\
+    \rowcolor{lightgray!50}
+    {}                & AFNI vs. SPM & 0.645                           & 1.428                              & 0.064                             & 1.489    & -0.065 & 1.206    \\
+    {Within Tool}     & FSL          & -0.025                           & 0.197                              & 0.012                             & 0.043    & 0.004 & 0.041    \\
+    {(WT)}            & SPM          & -0.002                           & 0.154                              & 0.000                             & 0.033    & 0.000 & 0.028    \\
+    {}                & AFNI         & -0.008                           & 0.208                              & 0.000                             & 0.078    & 0.000 & 0.072    \\
+    \bottomrule
+  \end{tabular}
+  \caption{Voxel-wise mean and standard deviation of BT and WT variability in intersected t-statistic maps.}
+  \label{table:pipeline-stats-fixed-mask}
+\end{table}
+
+\begin{figure*}[ht]
+  \centering
+    \includegraphics[width=.9\textwidth]{figures/plots/Bland-Altman/fixed-mask/unthresh-gl-frame.png}
+  \caption{\textbf{A} and \textbf{B}: Bland-Altman plots comparing group-level differences computed over the intersections 
+  between tools (\textbf{A}) and within tools at machine error (\textbf{B}).}% \textbf{C}: voxel-wise comparison of absolute differences.}
+  \label{fig:unthresh-maps-mask}
 \end{figure*}
 
 
@@ -573,12 +611,12 @@ likely to successfully correct for machine error in such group studies.  Neverth
 substantial in group analyses that are based on a single tool, as is
 commonly the case in current fMRI studies. In particular, in our study, the
 inherent instability of thresholding was triggered by within-tool software
-variability in 9\% of 360 brain regions, which indicates that it might have
+variability in 20\% of 360 brain regions, which indicates that it might have
 impacted neuroscientific conclusions related to these regions.
 
-In subject-level analyses, within- and between-tool software variabilties can become
+In subject-level analyses, within- and between-tool software variabilities can become
 of comparable magnitude for some subjects in some regions. This observation
-can be used as a proxy for data quality, and
+% can be used as a proxy for data quality, and
 is particularly relevant to the development of fMRI-based biomarkers aiming
 at individualized phenotype predictions. Machine error may play
 a non-negligible role in such analyses, even when predictions combine
@@ -689,20 +727,20 @@ the ones in~\cite{bowring2019exploring}.
   % \end{minipage}}
 \end{figure*}
 
-\section{BT and WT correlations for all subjects}
-\label{sec:supp-subjects}
+% \section{BT and WT correlations for all subjects}
+% \label{sec:supp-subjects}
 
-Figure~\ref{fig:unthresh-correlation-allsbj} plots the relationship between
-WT and BT for each subject across voxels, showing a consistent moderate correlation between BT and
-WT.
+% Figure~\ref{fig:unthresh-correlation-allsbj} plots the relationship between
+% WT and BT for each subject across voxels, showing a consistent moderate correlation between BT and
+% WT.
 
-\begin{figure*}[ht]
-  \centering
-  \includegraphics[width=.55\textwidth]{figures/sbj-abs-corr-unthresh-plot.png}
-  % \includegraphics[width=.6\textwidth]{figures/sbj-abs-corr-unthresh-plot.png}
-  \caption{Comparison between BT and WT variabilty for 16 subjects.}
-  \label{fig:unthresh-correlation-allsbj}
-\end{figure*}
+% \begin{figure*}[ht]
+%   \centering
+%   \includegraphics[width=.55\textwidth]{figures/sbj-abs-corr-unthresh-plot.png}
+%   % \includegraphics[width=.6\textwidth]{figures/sbj-abs-corr-unthresh-plot.png}
+%   \caption{Comparison between BT and WT variabilty for 16 subjects.}
+%   \label{fig:unthresh-correlation-allsbj}
+% \end{figure*}
 
 \section{Maps of t-statistic for subject with highest WT variability}
 \label{sec:supp-worst-subject}
@@ -712,7 +750,7 @@ for each run of tools for the subject with highest WT variability.
 
 \begin{figure*}[ht]
   \centering
-  \includegraphics[width=\textwidth]{figures/10-marked.pdf}
+  \includegraphics[width=\textwidth]{figures/4-marked.pdf}
   % \includegraphics[width=\textwidth]{figures/plots/wt-tstats/5-framed.png}
   % \includegraphics[width=.6\textwidth]{figures/sbj-abs-corr-unthresh-plot.png}
   \caption{For subject with highest WT variability, unthresholded subject-level t-statistic
