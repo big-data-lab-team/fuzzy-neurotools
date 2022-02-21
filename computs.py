@@ -35,25 +35,25 @@ def compute_rel(f1, file_name=None, f2=None):
 
     # Compute relative diff in WT
     else:
-        sample_list = []
-        flag_ = False
-        for i in range(1, 11):
-            file_ = f1.replace('MCA', str(i))
-            file_ = nib.load(file_)
-            file_d = file_.get_fdata()
-            sample_list.append(file_d)
-            if flag_:
-                mask = np.where((file_d == 0) & (tmp == 0), np.nan, 1)
-            flag_ = True
-            tmp = file_d
-        diff_list = []
-        for pair_ in list(itertools.combinations(sample_list, 2)):
-            f1_data = pair_[0]
-            f2_data = pair_[1]
-            diff_list.append((f1_data - f2_data))
-        diff_avg = np.mean(diff_list, axis=0)
-        img_rel = np.where((mask == 1), diff_avg, np.nan)
-        nft_img_rel = nib.Nifti1Image(img_rel, file_.affine, header=file_.header)
+        file_ = f1.replace('MCA', '1')
+        file_ = nib.load(file_)
+        f1_data = file_.get_fdata()
+        max_ = np.zeros(f1_data.shape)
+        for pair_ in list(itertools.combinations(range(1, 11), 2)):
+            file_n1 = f1.replace('MCA', str(pair_[0]))
+            file_ = nib.load(file_n1)
+            f1_data = file_.get_fdata()
+            file_n2 = f1.replace('MCA', str(pair_[1]))
+            file_ = nib.load(file_n2)
+            f2_data = file_.get_fdata()
+            img_rel = (f1_data - f2_data)
+            img_rel = np.where((f1_data == 0) & (f2_data == 0), np.nan, img_rel)
+            if np.nanstd(img_rel) > np.nanstd(max_):
+                max_ = img_rel
+                f1_name = file_n1
+                f2_name = file_n2
+        print('{} and {} at {}'.format(f1_name, f2_name, file_name))
+        nft_img_rel = nib.Nifti1Image(max_, file_.affine, header=file_.header)
         nib.save(nft_img_rel, os.path.join('data/diff/', '{}-rel.nii.gz'.format(file_name)))
         return nft_img_rel
 
@@ -135,25 +135,7 @@ def var_between_fuzzy(mca_results):
                       'sbj{}-fuzzy-afni-spm-unthresh'.format('%.2d' % i))
 
 
-############# PLOT DIFF.
-
-def check_intensities(bt_, wt_, type_, ax, tool1):
-    # Correlated maps
-    if type(tool1) == str: img1 = nib.load(tool1)
-    else: img1 = tool1
-    img_data1 = img1.get_fdata()
-    corr_map = np.where((0.99<bt_/wt_) & (bt_/wt_< 1.01) , img_data1, np.nan)#
-    other_voxel = np.where((0.99<bt_/wt_) & (bt_/wt_< 1.01), np.nan, img_data1)#
-    # print(f"bt other: min: {np.nanmin(other_voxel)} max: {np.nanmax(other_voxel)} mean {np.nanmean(other_voxel)} ")
-    h_, bins = np.histogram(np.nan_to_num(other_voxel))
-    ax.hist(np.reshape(other_voxel, -1), bins, log=True, label="Others")
-    # print(f"bt corr: min: {np.nanmin(corr_map)} max: {np.nanmax(corr_map)} mean {np.nanmean(corr_map)} ")
-    # h_, bins = np.histogram(np.nan_to_num(corr_map))
-    ax.hist(np.reshape(corr_map, -1), bins, log=True, label="Correlated voxels")
-    ax.legend()
-    ax.set_title(type_)
-    #plt.show()
-
+############# PLOT CORR. DIFF.
 
 def plot_diff_corr_group(sbj=False):
     ### Plot correlation of differences between BT and WT
@@ -206,6 +188,7 @@ def plot_diff_corr_group(sbj=False):
                     plt.subplots_adjust(wspace=0.3)                    
             if sbj == True: fig.savefig('./paper/figures/abs/corr/sbj{}-rel-corr-{}-plot.png'.format('%.2d' % i, type_), bbox_inches='tight')
             else: fig.savefig('./paper/figures/abs/corr/rel-corr-{}-plot.png'.format(type_), bbox_inches='tight')
+
 
 ############# COMPUTE and PLOT DICES
 
@@ -762,10 +745,10 @@ def main(args=None):
     # regions_txt = './data/MNI-parcellation/HCP-MMP1_on_MNI152_ICBM2009a_nlin.txt'
     # if os.path.exists('./data/dices2_.pkl'):
     #     dices_ = load_variable('dices_')
-    #     plot_dices(dices_)
+    #     # plot_dices(dices_)
     # else:
     #     dices_ = get_dice_values(regions_txt, image_parc, tool_results, mca_results)
-    #     plot_dices(dices_)
+    #     # plot_dices(dices_)
 
     ### abs diff in different precisions in WT
     # path_ = './results/ds000001/fuzzy/'

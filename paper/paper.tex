@@ -390,7 +390,7 @@ correctly skull-stripped and registered to the MNI template.
 
 Table~\ref{table:pipeline-stats} presents summary statistics for variability in the
 group-level t-statistic.
-Mean of differences in t-statistic maps is centered around zero for BT and WT
+Mean of differences in t-statistic maps was centered around zero for BT and WT
 in both thresholded and unthresholded maps (t-test p~\textless~$10^{-5}$).
 However, for each tool pair (A, B), BT variability was
 significantly larger than WT in tool A or B,
@@ -420,12 +420,12 @@ In addition, results show that BT and WT were not correlated across voxels
     \rowcolor{lightgray!50}
     {Between Tools}   & FSL vs. SPM  & -0.845                           & 2.639                              & -0.052                             & 1.122    & -0.059 & 0.911    \\
     \rowcolor{lightgray!50}
-    {(BT)}            & FSL vs. AFNI & -0.871                           & 3.216                              & 0.048                             & 1.405    & -0.027 & 1.097    \\
+    {(BT)}            & FSL vs. AFNI & -0.871                           & 3.216                              & 0.048                             & 1.405    & 0.027 & 1.097    \\
     \rowcolor{lightgray!50}
     {}                & AFNI vs. SPM & 0.426                           & 3.214                              & -0.113                             & 1.543    & -0.104 & 1.208    \\
-    {Within Tool}     & FSL          & -0.009                           & 0.266                              & 0.012                             & 0.046    & 0.004 & 0.042    \\
-    {(WT)}            & SPM          & 0.000                           & 0.199                              & 0.000                             & 0.035    & 0.000 & 0.029    \\
-    {}                & AFNI         & -0.004                           & 0.273                              & 0.000                             & 0.084    & 0.000 & 0.075    \\
+    {Within Tool}     & FSL          & -0.397                           & 1.218                              & -0.020                             & 0.189    & 0.017 & 0.207    \\
+    {(WT)}            & SPM          & 0.142                           & 1.035                              & 0.000                             & 0.139    & 0.000 & 0.126    \\
+    {}                & AFNI         & -0.045                           & 1.282                              & 0.000                             & 0.373    & 0.000 & 0.355    \\
     \bottomrule
   \end{tabular}
   \caption{Voxel-wise mean and standard deviation of BT and WT variability in t-statistic maps.}
@@ -452,7 +452,9 @@ In addition, results show that BT and WT were not correlated across voxels
 
 Table~\ref{table:pipeline-stats} also presents summary statistics for
 subject-level unthresholded t-statistic maps (mean over subjects).
-As for group-level maps, BT was consistently larger than WT (Wilcoxon
+As for group-level maps, the mean of differences in t-statistic maps was
+approximately zero centered in both BT and WT (t-test p~\textless~$10^{-4}$ for 13 subjects),
+and BT was consistently larger than WT (Wilcoxon
 signed-rank test and t-test p~\textless~$10^{-4}$ for 14 subjects).
 However, for some subjects and for AFNI, WT approached 
 BT in some regions (Figure~\ref{fig:unthresh-maps-sbj},
@@ -464,7 +466,7 @@ and see Supplemental Material~\ref{sec:supp-worst-subject}).
 %%%%%%%%%% Var. of Unthresh sbj05%%%%%%%%
 \begin{figure*}[ht]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/plots/Bland-Altman/with-masking/unthresh-sbj04.png}
+  \includegraphics[width=0.9\textwidth]{figures/plots/Bland-Altman/with-masking/unthresh-sbj05.png}
   \caption{For subject with highest WT variability,
     unthresholded subject-level variability computed between tools (\textbf{A}), and within tools at machine error (\textbf{B}).}
     % and difference between them (\textbf{C}). \camille{If the changes are visible, I think that it would be useful to add the correspondant unthresholded maps for the reader to see where the differences are and what they "look like"}}
@@ -556,7 +558,7 @@ we also computed results in the intersection of maps and found that the brain ma
 triggered by both BT and WT.
 BT and WT variabilities were consistently smaller than ones with the fixed masks
 in both thresholded and unthresholded maps (see Table~\ref{table:pipeline-stats-fixed-mask}).
-The effect of masking was clearly appeared in BT by Bland-Altman plots showing that blob lines
+The effect of masking appeared in Bland-Altman plots by showing that blob lines
 were removed after fixing masks (Figure~\ref{fig:unthresh-maps-mask}-\textbf{A},\textbf{B}).
 
 %%%%%%%%%% Summary of statstics %%%%%%%%
@@ -576,9 +578,9 @@ were removed after fixing masks (Figure~\ref{fig:unthresh-maps-mask}-\textbf{A},
     {(BT)}            & FSL vs. AFNI & -0.823                           & 1.857                              & 0.048                             & 1.439    & 0.034 & 1.146    \\
     \rowcolor{lightgray!50}
     {}                & AFNI vs. SPM & 0.645                           & 1.428                              & 0.064                             & 1.489    & -0.065 & 1.206    \\
-    {Within Tool}     & FSL          & -0.025                           & 0.197                              & 0.012                             & 0.043    & 0.004 & 0.041    \\
-    {(WT)}            & SPM          & -0.002                           & 0.154                              & 0.000                             & 0.033    & 0.000 & 0.028    \\
-    {}                & AFNI         & -0.008                           & 0.208                              & 0.000                             & 0.078    & 0.000 & 0.072    \\
+    {Within Tool}     & FSL          & 0.012                           & 0.127                              & 0.000                             & 0.165    & 0.017 & 0.199    \\
+    {(WT)}            & SPM          & 0.002                           & 0.154                              & 0.000                             & 0.121    & 0.000 & 0.110    \\
+    {}                & AFNI         & -0.003                           & 0.3548                              & 0.003                             & 0.285    & 0.000 & 0.328    \\
     \bottomrule
   \end{tabular}
   \caption{Voxel-wise mean and standard deviation of BT and WT variability in intersected t-statistic maps.}
@@ -750,7 +752,7 @@ for each run of tools for the subject with highest WT variability.
 
 \begin{figure*}[ht]
   \centering
-  \includegraphics[width=\textwidth]{figures/4-marked.pdf}
+  \includegraphics[width=\textwidth]{figures/5-marked.pdf}
   % \includegraphics[width=\textwidth]{figures/plots/wt-tstats/5-framed.png}
   % \includegraphics[width=.6\textwidth]{figures/sbj-abs-corr-unthresh-plot.png}
   \caption{For subject with highest WT variability, unthresholded subject-level t-statistic
