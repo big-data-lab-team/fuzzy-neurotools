@@ -77,8 +77,8 @@
   between-tool software variability was consistently larger than within-tool software
   variability. In subject analyses, within-tool software variability
   approached between-tool software variability in some regions for some subjects.
-  Interestingly, within- and between-tool software variabilities appeared moderately
-  correlated ($r > 0.5$ across voxels) in all tested conditions. 
+  Interestingly, the brain masking instability was triggered by both within- and between-tool
+  software variabilities.
   % Finally, we found that
   % within-tool software variability had effects of similar magnitude to between-tool
   % software variability when simulated from numerical perturbations introduced at the virtual
@@ -625,14 +625,15 @@ a non-negligible role in such analyses, even when predictions combine
 results produced by multiple tools.
 
 For both group- and subject-level analyses, between- and within-tool
-software variabilities were found to be moderately correlated. Even though
-both types of variability are different in nature, this result suggests
+software variabilities similarly trigger the brain masking instability.
+Even though both types of variability are different in nature, this result suggests
 that in some cases they may have a common cause that might be related to
-the conditioning of fMRI analysis in a specific dataset. Along these lines,
-in some regions, instabilities of similar magnitude may be triggered by
-small numerical perturbations, model variations, or implementation
-differences. For instance, high-motion datasets may trigger between- and
-within-tool instabilities similarly. 
+the conditioning of fMRI analysis in a specific dataset. 
+% Along these lines,
+% in some regions, instabilities of similar magnitude may be triggered by
+% small numerical perturbations, model variations, or implementation
+% differences. For instance, high-motion datasets may trigger between- and
+% within-tool instabilities similarly. 
 
 Therefore, numerical stability may be a suitable proxy to study
 between-tool variability. This speculation might be of practical value to
