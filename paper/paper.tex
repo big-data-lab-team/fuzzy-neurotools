@@ -64,37 +64,24 @@
   Variability has been broadly observed in functional MRI analyses as a
   result of software differences both between and within analytic tools.
   However, the relationship between within-tool and between-tool software
-  variabilities for a given analysis is unclear. Within-tool variability has multiple origins
-  including variations in algorithms, parametrizations, and
-  low-level software dependencies. We focus on the effects resulting from software dependencies --- 
-  in particular due to operating system and other infrastructural updates --- as they often remain unnoticed 
-  while algorithms and parametrizations are more controllable.
- We extended
-  a previous comparison of fMRI analysis software libraries (namely FSL,
-  AFNI, and SPM) and related the observed differences to within-tool
-  software variability simulated using Monte-Carlo arithmetic. In group
-  analyses, we found that
-  between-tool software variability was consistently larger than within-tool software
-  variability. In subject analyses, within-tool software variability
-  approached between-tool software variability in some regions for some subjects.
-  Interestingly, the brain masking instability was triggered by both within- and between-tool
-  software variabilities.
-  % Finally, we found that
-  % within-tool software variability had effects of similar magnitude to between-tool
-  % software variability when simulated from numerical perturbations introduced at the virtual
-  % precision of 17 bits --- a high but plausible level of uncertainty for
-  % scientific computing libraries. \tristan{Revise from latest results}
-  % %  \gk{What does this mean? They only have
-  % precision of 17, or they use data that is 17 bits?}
-  %  \yohan{agree with Greg, it is unclear and a strong assertion!}
-  %  \camille{It is not entirely clear to me how this relates to the previous
-  %  conclusions that BT variability was consistently larger than machine
-  %  error} \tristan{Better?}
-  Our findings motivate the continued investigation of within-tool
-  software variability in neuroimaging, and position it as a possible proxy
-  for studying some of the arbitrary between-tool software variations for
-  subject-level analyses.
-\end{abstract}
+  variabilities for a given analysis is unclear. Within-tool variability has
+  multiple origins including variations in algorithms, parametrizations, and
+  low-level software dependencies. We focus on the effects resulting from
+  software dependencies --- in particular due to operating system and other
+  infrastructural updates --- as they often remain unnoticed while algorithms
+  and parametrizations are more controllable. We extended a previous
+  comparison of fMRI analysis software libraries (namely FSL, AFNI, and SPM)
+  and related the observed differences to within-tool software variability
+  simulated using Monte-Carlo arithmetic. In group analyses, we found that
+  between-tool software variability was consistently larger than within-tool
+  software variability. In subject analyses, between-tool software
+  variability also dominated within-tool variability overall, however,
+  within-tool software variability approached between-tool software
+  variability in some regions for some subjects. Interestingly, the brain
+  masking instability was triggered by both within- and between-tool software
+  variabilities. Our findings motivate the continued investigation of
+  within-tool software variability in neuroimaging.
+  \end{abstract}
 
 \section{Introduction}
 
@@ -379,8 +366,7 @@ We verified the correctness of our analyses by comparing our unperturbed
 t-statistic group maps with the ones obtained
 in~\cite{bowring2019exploring}. For FSL, we found
 strictly identical results with the same MD5 checksums. For SPM, the files (as measured by MD5 checksums) were different but differences
-were visually unnoticeable. For AFNI, the overall patterns of activations were preseved
-, however, differences were noticeable visually.
+were visually unnoticeable. For AFNI, the overall patterns of activations were preserved, however, differences were noticeable visually.
 The observed differences remained small (see Supplemental Material~\ref{sec:supp-repro}), and might be due to the use of
 GNU/Octave vs MATLAB in SPM, and of multithreading in AFNI. We performed visual quality control of the AFNI
 and SPM results for each individual subject and confirmed that T1-weighted images were
@@ -393,9 +379,7 @@ group-level t-statistic.
 Mean of differences in t-statistic maps was centered around zero for BT and WT
 in both thresholded and unthresholded maps (t-test p~\textless~$10^{-5}$).
 However, for each tool pair (A, B), BT variability was
-significantly larger than WT in tool A or B,
-with an order of magnitude larger standard deviation of differences 
-in both thresholded and unthresholded maps, 
+significantly larger than WT in tool A or B
 (Wilcoxon signed-rank test and t-test p~\textless~$10^{-5}$).
 These global differences were confirmed by Bland-Altman plots showing a
 clear dominance of BT over WT
@@ -555,9 +539,9 @@ unthresholded maps.
 
 While the previous results were obtained over the union of t-statistic maps between the pair of tools,
 we also computed results in the intersection of maps and found that the brain masking instability was
-triggered by both BT and WT.
-BT and WT variabilities were consistently smaller than ones with the fixed masks
-in both thresholded and unthresholded maps (see Table~\ref{table:pipeline-stats-fixed-mask}).
+triggered by both BT and WT (Table~\ref{table:pipeline-stats-fixed-mask}).
+BT and WT variabilities were generally smaller than the ones obtained previously (Table~\ref{table:pipeline-stats})
+in both thresholded and unthresholded maps.
 The effect of masking appeared in Bland-Altman plots by showing that blob lines
 were removed after fixing masks (Figure~\ref{fig:unthresh-maps-mask}-\textbf{A},\textbf{B}).
 
@@ -626,48 +610,11 @@ results produced by multiple tools.
 
 For both group- and subject-level analyses, between- and within-tool
 software variabilities similarly trigger the brain masking instability.
-Even though both types of variability are different in nature, this result suggests
-that in some cases they may have a common cause that might be related to
-the conditioning of fMRI analysis in a specific dataset. 
-% Along these lines,
-% in some regions, instabilities of similar magnitude may be triggered by
-% small numerical perturbations, model variations, or implementation
-% differences. For instance, high-motion datasets may trigger between- and
-% within-tool instabilities similarly. 
-
-Therefore, numerical stability may be a suitable proxy to study
-between-tool variability. This speculation might be of practical value to
-address software variability at large given that within-tool variability
-measurements can be automated while between-tool ones require substantial
-human intervention. Indeed, within-tool variability can be simulated
-irrespective of the particular analysis done, and with important sample
-sizes, while between-tool variability requires re-implementing analysis in
-different toolboxes and is limited to a few samples. Automated multi-verse
-frameworks could be developed to assess and possibly reduce within-tool
-variability as a pre-requisite for between-tool variability.
-
-% \tristan{This paragraph needs to be revised as we can't conclude that from the data we have}
-% The finding that numerical variability approached tool variability at the
-% virtual precision of t=17~bits is interesting too. Indeed, while machine
-% error generally introduces perturbations on the least-significant bit of the mantissa,
-% ones 
-% % \yohan{I would not mix virtual precision and error measurement}\tristan{better?}
-% common scientific software dependencies introduce larger perturbations
-% .
-% For instance, SciPy's 2D spline interpolation was recently found to be
-% precise up to 10~bits~\cite{pytracer}
-% and its replacement by a more precise implementation might therefore introduce
-% numerical perturbations leading to errors in the range of between-tool
-% variability. Such high errors
-% might be triggered by updates in operating systems, Python, MATLAB, and
-% other software dependencies.
-% \yohan{The sentence is ok, just a picky point: the SciPy result you cited
-% describes the precision of the spline implementation while at the end
-% you're talking differences due to updates. The nuance is that two versions
-% may have a similar precision and so when you udpate your system, the
-% difference between both versions is low but each version can be
-% ill-conditionned.}
-% \tristan{better?}
+Even though both types of variability are different in nature, this result
+suggests that in some cases they may have a common cause that might be
+related to the conditioning of fMRI analysis in a specific dataset. In such
+cases, numerical stability may be a suitable proxy to study between-tool
+variability, which could be of practical value.
 
 Our results are limited by the type of numerical noise introduced in the
 analyses. Indeed, we only perturbed the outputs of elementary
@@ -677,14 +624,15 @@ be considered a lower bound. Likewise, our estimation of tool varability is
 likely to be underestimated, having tested only 3 analytical pipelines
 among the thousands available~\cite{carp2012plurality}.
 
-In conclusion, our results motivate further numerical stability
-investigations in fMRI analyses. Pipeline-level analyses could be conducted
-to identify specific components that contribute to numerical variability,
-and if possible correct them accordingly. Besides, in cases where
-instability is inherent to the analysis, sampling results distributions
-through numerical perturbations might improve stability, as explored
-in~\cite{kiar2021data}. Finally, pipeline-specific statistical corrections
-might be envisaged to account for within-tool software variability.
+In conclusion, between-tool variability clearly dominates within-tool
+variability overall. However, within-tool variability still reaches
+magnitudes that may affect scientific conclusions derived from data
+analyses --- in particular in subject analyses and in group analyses
+that rely on thresholded maps. Moreover, sources of variability such as brain
+masking affect both within-tool and between-tool
+variability: in these specific cases only, within-tool variability may be
+used as a proxy to between-tool variability. These findings motivate
+further investigations of within-tool varability in fMRI analyses.
 
 \bibliographystyle{plain}
 \bibliography{biblio}
