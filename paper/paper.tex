@@ -79,7 +79,7 @@
   within-tool software variability approached between-tool software
   variability in some regions for some subjects. Interestingly, the brain
   masking instability was triggered by both within- and between-tool software
-  variabilities. Our findings motivate the continued investigation of
+  variabilities \camille{I did not quite understand what `masking instability` meant here, maybe ``differences observed in brain masks?''}. Our findings motivate the continued investigation of
   within-tool software variability in neuroimaging.
   \end{abstract}
 
@@ -377,7 +377,7 @@ correctly skull-stripped and registered to the MNI template.
 Table~\ref{table:pipeline-stats} presents summary statistics for variability in the
 group-level t-statistic.
 Mean of differences in t-statistic maps was centered around zero for BT and WT
-in both thresholded and unthresholded maps (t-test p~\textless~$10^{-5}$).
+in both thresholded and unthresholded maps (t-test p~\textless~$10^{-5}$ \camille{I don't understand the `centered around zero' and then the very small p-value, is this contradictory? } \camille{I am no statistician but I think we cannot perform t-test to test for differences in t-statistic. To perform a parametric test we would have to transform to z-stat or to go back to the contrast values. This reminds me of how we do tests in meta-analysis, more on page 3 of (unpublished) \url{https://github.com/cmaumet/zmeta_paper/blob/master/ibma_zmeta_journal.pdf}. I think the right thing to do here would be to use some version of Stouffer, if that's of interest I am happy  to chat about it? Hopefully this should not be too cumbersome, mainly T to Z transfo followed by some averaging and then testing against a normal distribution. Let me know!} ).
 However, for each tool pair (A, B), BT variability was
 significantly larger than WT in tool A or B
 (Wilcoxon signed-rank test and t-test p~\textless~$10^{-5}$).
@@ -428,7 +428,7 @@ In addition, results show that BT and WT were not correlated across voxels
 \begin{figure*}[ht]
   \centering
   \includegraphics[width=.9\textwidth]{figures/rel-corr-unthresh-with-masking.png}
-  \caption{Voxel-wise comparison of group-level differences in BT and WT.}
+  \caption{Voxel-wise comparison of group-level differences in BT and WT. \camille{That's not obvious to me why are the bins bigger here compared to the B-A plots? }}
   \label{fig:unthresh-maps-corr}
 \end{figure*}
 
@@ -443,6 +443,9 @@ signed-rank test and t-test p~\textless~$10^{-4}$ for 14 subjects).
 However, for some subjects and for AFNI, WT approached 
 BT in some regions (Figure~\ref{fig:unthresh-maps-sbj},
 and see Supplemental Material~\ref{sec:supp-worst-subject}).
+\camille{to me, this seems like an important result, is this big difference also visible on the thresholded maps of that subject? if so, that's just a thought of course, but I think that it could be very nice to also display the thresholded brain maps that correspond to the subject in question (similar to figure 4). This would be an important piece of info for brain imagers to understand the impact WT variability can have on their subject-level results.}
+
+
 % As for the group maps, BT and WT
 % showed no correlation across voxels for all subjects
 % (r$\approx 0$, p$< 10^{-5}$ for all subjects, see Supplemental Material~\ref{sec:supp-subjects} and~\ref{sec:supp-worst-subject}).
@@ -494,10 +497,10 @@ We also compared BT and WT in thresholded maps since these maps are commonly use
 to conclude on the activation of specific regions. Thresholding is an unstable operation
 that introduced variability at the edges of
 active regions for both BT and WT. Except at the edges, BT remained consistently larger
-than WT (Figure~\ref{fig:thresh-maps}-\textbf{A},\textbf{B},\textbf{C} and Table~\ref{table:pipeline-stats}). 
+than WT (Figure~\ref{fig:thresh-maps}-\textbf{A},\textbf{B},\textbf{C} and Table~\ref{table:pipeline-stats}) \camille{I personnally really like Fig. 4! It shows very nicely how instable some clusters are and this is close to what brain imagers are used to. Maybe it could be in the main text instead of supplementary?}. 
 
 Moreover, to compare the effects of BT and WT on the detection of activated
-regions, we measured WT instability and BT instability in each region of
+regions, we measured WT instability \camille{Could we describe in a sentence what WT instability mean in this context? i.e. when is it zero and when is it one. Sorry if I missed it!} and BT instability in each region of
 the HCP-MMP1.0 parcellation. The confusion matrices in
 Figure~\ref{fig:thresh-maps}-\textbf{D} report these instabilities for the
 360 tested regions. The average ratio of unstable regions was 26.2\% for BT
@@ -543,7 +546,7 @@ triggered by both BT and WT (Table~\ref{table:pipeline-stats-fixed-mask}).
 BT and WT variabilities were generally smaller than the ones obtained previously (Table~\ref{table:pipeline-stats})
 in both thresholded and unthresholded maps.
 The effect of masking appeared in Bland-Altman plots by showing that blob lines
-were removed after fixing masks (Figure~\ref{fig:unthresh-maps-mask}-\textbf{A},\textbf{B}).
+were removed after fixing masks \camille{maybe change `fixing masks` into `when using the intersection mask for all maps` or something similar to avoid making it sound like what was done previously could have been fixed?.} (Figure~\ref{fig:unthresh-maps-mask}-\textbf{A},\textbf{B}).
 
 %%%%%%%%%% Summary of statstics %%%%%%%%
 \setlength{\tabcolsep}{5pt}
